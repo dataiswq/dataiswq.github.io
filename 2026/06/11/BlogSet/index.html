@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en"><head>
+<title>Hexo 静态博客搭建指南——从本地到 GitHub Pages - Hexo</title>
+<meta charset="UTF-8">
+<meta name="keywords" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<meta name="description" content="本文记录我在 Linux 环境下使用 Hexo 搭建静态博客，并通过 GitHub Pages 实现公网访问的完整过程，涵盖环境安装、本地预览、主题配置与一键部署。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo 静态博客搭建指南——从本地到 GitHub Pages">
+<meta property="og:url" content="http://example.com/2026/06/11/BlogSet/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文记录我在 Linux 环境下使用 Hexo 搭建静态博客，并通过 GitHub Pages 实现公网访问的完整过程，涵盖环境安装、本地预览、主题配置与一键部署。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-06-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-11T16:00:00.000Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="GitHub Pages">
+<meta property="article:tag" content="Hexo">
+<meta property="article:tag" content="记录">
+<meta name="twitter:card" content="summary">
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.css">
+<link rel="stylesheet" href="/lib/mdui_043tiny/mdui.css">
+
+
+<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1781194891383">
+
+<link rel="stylesheet" href="/css/style.css?v=1781194891383">
+
+
+
+
+    
+        <link rel="stylesheet" href="/custom.css?v=1781194891383">
+    
+
+
+
+<script src="/lib/mdui_043tiny/mdui.js" async></script>
+<script src="/lib/fancybox/fancybox.umd.js" async></script>
+<script src="/lib/lax.min.js" async></script>
+
+
+<script async src="/js/app.js?v=1781194891383"></script>
+
+ 
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4D4ZJ9G024"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+
+  gtag("config", "G-4D4ZJ9G024");
+</script>
+
+
+<link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+<meta name="generator" content="Hexo 8.1.2"></head><body class="nexmoe mdui-drawer-body-left"><div id="nexmoe-background"><div class="nexmoe-bg" style="background-image: url(/Picture/头像.jpg)"></div><div class="mdui-appbar mdui-shadow-0"><div class="mdui-toolbar"><a class="mdui-btn mdui-btn-icon mdui-ripple" mdui-drawer="{target: &#039;#drawer&#039;, swipe: true}" title="menu"><i class="mdui-icon nexmoefont icon-menu"></i></a><div class="mdui-toolbar-spacer"></div><a class="mdui-btn mdui-btn-icon" href="/" title="John Doe"><img src="/Picture/头像.jpg" alt="John Doe"></a></div></div></div><div id="nexmoe-header"><div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="John Doe">
+            <img src="/Picture/头像.jpg" alt="John Doe" alt="John Doe">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>2</div>
+        <div><span>Tags</span>3</div>
+        <div><span>Categories</span>1</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/PY.html" title="我的朋友">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                我的朋友
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" target="_blank" rel="noopener" href="https://nexmoe.com/donate.html" title="给我赞助">
+            <i class="mdui-list-item-icon nexmoefont icon-coffee"></i>
+            <div class="mdui-list-item-content">
+                给我赞助
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" target="_blank" rel="noopener" href="https://dataiswq.github.io/" title="关于博主">
+            <i class="mdui-list-item-icon nexmoefont icon-info-circle"></i>
+            <div class="mdui-list-item-content">
+                关于博主
+            </div>
+        </a>
+        
+    </div>
+    
+    
+        
+        <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+
+
+
+
+    
+        
+        <div class="nexmoe-widget-wrap">
+	<div class="nexmoe-widget nexmoe-social">
+		<a
+			class="mdui-ripple"
+			href="https://dataiswq.github.io/"
+			target="_blank"
+			mdui-tooltip="{content: 'GitHub'}"
+			style="
+				color: rgb(25, 23, 23);
+				background-color: rgba(25, 23, 23, .1);
+			"
+		>
+			<i
+				class="nexmoefont icon-github"
+			></i> </a
+		>
+	</div>
+</div>
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/建立博客/">建立博客</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/GitHub-Pages/" style="font-size: 10px;">GitHub Pages</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">记录</a>
+    </div>
+    
+      <script>
+        var maxTagcloud = parseInt(17);
+        var tags_length = parseInt(3);
+        var tags_arr = [];
+        for(var i = 0; i < tags_length; i++){
+          tags_arr.push(i);
+        }
+        tags_arr.sort(function (l, r) {
+          return Math.random() > 0.5 ? -1 : 1;
+        });
+        tags_arr = tags_arr.slice(0, maxTagcloud < tags_length ? tags_length - maxTagcloud : 0);
+        for(var tag_i = 0; tag_i < tags_arr.length; tag_i++){
+          document.getElementById("randomtagcloud").children[tags_arr[tag_i]].style.display = 'none';
+        }
+      </script>
+    
+  </div>
+
+    
+        
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/">2026</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/06/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/BlogSet/">Hexo 静态博客搭建指南——从本地到 GitHub Pages</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+   
+    <div class="nexmoe-copyright">
+        &copy; 2026 John Doe
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer --></div><div id="nexmoe-content"><div class="nexmoe-primary"><div class="nexmoe-post">
+  <article>
+    
+        <div class="nexmoe-post-cover absolute" style="padding-top: NaN%;"> 
+            <img src="/Picture/凡人.jpg" alt="Hexo 静态博客搭建指南——从本地到 GitHub Pages" loading="lazy">
+            <h1>Hexo 静态博客搭建指南——从本地到 GitHub Pages</h1>
+        </div>
+    
+    
+    <div class="nexmoe-post-meta">
+    <div class="nexmoe-rainbow">
+        <a class="nexmoefont icon-calendar-fill">2026年06月11日</a>
+        
+            <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E5%BB%BA%E7%AB%8B%E5%8D%9A%E5%AE%A2/">建立博客</a>
+        
+        
+    </div>
+    
+    
+    
+    
+    
+</div>
+
+    <h2 id="整体简述"><a href="#整体简述" class="headerlink" title="整体简述"></a>整体简述</h2><p>Hexo 是一个快速、简洁且高效的静态博客框架，将 Markdown 文章渲染为静态 HTML 页面。配合 GitHub Pages，可以免费获得一个 <code>https://用户名.github.io</code> 形式的个人网站，无需购买服务器。</p>
+<p>本文以 <strong>Linux（Debian&#x2F;Ubuntu 系）</strong> 为例，完整走通「注册 GitHub → 本地搭建 Hexo → 配置 SSH 部署 → 公网访问」的流程。</p>
+<hr>
+<h2 id="准备过程"><a href="#准备过程" class="headerlink" title="准备过程"></a>准备过程</h2><h3 id="1-注册-GitHub-账号"><a href="#1-注册-GitHub-账号" class="headerlink" title="1. 注册 GitHub 账号"></a>1. 注册 GitHub 账号</h3><ol>
+<li>打开 <a target="_blank" rel="noopener" href="https://github.com/">GitHub 官网</a>，点击左上角 <strong>Sign up</strong> 注册。</li>
+<li>填写邮箱（可使用 QQ 邮箱、163 邮箱等）、密码，并完成人机验证。</li>
+<li>注册完成后登录，后续所有仓库与部署操作均在此账号下进行。</li>
+</ol>
+<h3 id="2-创建-GitHub-Pages-仓库"><a href="#2-创建-GitHub-Pages-仓库" class="headerlink" title="2. 创建 GitHub Pages 仓库"></a>2. 创建 GitHub Pages 仓库</h3><ol>
+<li>登录后点击右上角 <strong>+</strong> → <strong>New repository</strong>。</li>
+<li>仓库名必须为 <strong><code>用户名.github.io</code></strong>（例如用户名为 <code>zhangsan</code>，则仓库名为 <code>zhangsan.github.io</code>）。</li>
+<li>可见性选 <strong>Public</strong>，其余选项保持默认，点击 <strong>Create repository</strong>。</li>
+</ol>
+<blockquote>
+<p><strong>注意</strong>：仓库名必须严格符合上述格式，否则 GitHub Pages 无法自动识别并发布站点。</p>
+</blockquote>
+<h3 id="3-安装-Node-js、npm-与-Hexo"><a href="#3-安装-Node-js、npm-与-Hexo" class="headerlink" title="3. 安装 Node.js、npm 与 Hexo"></a>3. 安装 Node.js、npm 与 Hexo</h3><p>在 Linux 终端中依次执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 添加 NodeSource 仓库（LTS 长期支持版）</span></span><br><span class="line">curl -fsSL https://deb.nodesource.com/setup_lts.x | <span class="built_in">sudo</span> -E bash -</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 安装 Node.js（会自动包含 npm）</span></span><br><span class="line"><span class="built_in">sudo</span> apt install -y nodejs</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 验证安装</span></span><br><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 全局安装 Hexo 命令行工具</span></span><br><span class="line"><span class="built_in">sudo</span> npm install -g hexo-cli</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 验证 Hexo</span></span><br><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
+
+<p>若 <code>node -v</code>、<code>npm -v</code>、<code>hexo -v</code> 均能输出版本号，说明环境就绪。</p>
+<hr>
+<h2 id="建立本地博客网站"><a href="#建立本地博客网站" class="headerlink" title="建立本地博客网站"></a>建立本地博客网站</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>选择一个空目录作为博客根目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> MyBlog</span><br><span class="line"><span class="built_in">cd</span> MyBlog</span><br><span class="line">hexo init          <span class="comment"># 初始化 Hexo 项目</span></span><br><span class="line">npm install        <span class="comment"># 安装项目依赖</span></span><br></pre></td></tr></table></figure>
+
+<p>初始化完成后，目录结构大致如下：</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>source/_posts/</code></td>
+<td>存放 Markdown 文章（含示例 <code>hello-world.md</code>）</td>
+</tr>
+<tr>
+<td><code>_config.yml</code></td>
+<td>站点全局配置（标题、作者、部署方式等）</td>
+</tr>
+<tr>
+<td><code>themes/</code></td>
+<td>主题目录</td>
+</tr>
+<tr>
+<td><code>scaffolds/</code></td>
+<td>新建文章时的模板</td>
+</tr>
+<tr>
+<td><code>public/</code></td>
+<td>生成的静态网页（由 <code>hexo g</code> 产生，通常不手动编辑）</td>
+</tr>
+</tbody></table>
+<h3 id="全局配置-config-yml"><a href="#全局配置-config-yml" class="headerlink" title="全局配置 _config.yml"></a>全局配置 <code>_config.yml</code></h3><p>打开根目录下的 <code>_config.yml</code>，至少修改以下几项：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">title:</span> <span class="string">我的博客标题</span></span><br><span class="line"><span class="attr">subtitle:</span> <span class="string">副标题或一句话介绍</span></span><br><span class="line"><span class="attr">description:</span> <span class="string">站点描述，用于</span> <span class="string">SEO</span></span><br><span class="line"><span class="attr">author:</span> <span class="string">你的名字</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">zh-CN</span></span><br><span class="line"><span class="attr">timezone:</span> <span class="string">Asia/Shanghai</span></span><br><span class="line"><span class="attr">url:</span> <span class="string">https://你的用户名.github.io</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="安装与切换主题"><a href="#安装与切换主题" class="headerlink" title="安装与切换主题"></a>安装与切换主题</h3><ol>
+<li>在 <a target="_blank" rel="noopener" href="https://hexo.io/themes/">Hexo 主题列表</a> 或 GitHub 搜索心仪主题。</li>
+<li>将主题克隆到 <code>themes/</code> 目录，例如：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> themes</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/用户名/主题仓库名.git</span><br><span class="line"><span class="built_in">cd</span> ..</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>在 <code>_config.yml</code> 中指定主题（顶格书写，无前导空格）：</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">theme:</span> <span class="string">主题文件夹名</span></span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>多数主题自带 <code>_config.yml</code>，可复制为 <code>themes/主题名/_config.yml</code> 或在根目录创建 <code>_config.主题名.yml</code> 进行覆盖配置（具体以主题文档为准）。</li>
+</ol>
+<h3 id="本地预览"><a href="#本地预览" class="headerlink" title="本地预览"></a>本地预览</h3><p>养成「先清理、再生成、再预览」的习惯：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean          <span class="comment"># 清除上次生成的缓存与 public 目录</span></span><br><span class="line">hexo generate       <span class="comment"># 生成静态文件，可缩写为 hexo g</span></span><br><span class="line">hexo server         <span class="comment"># 启动本地服务，可缩写为 hexo s</span></span><br></pre></td></tr></table></figure>
+
+<p>终端出现以下提示即表示成功：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hexo is running at http://localhost:4000/ . Press Ctrl+C to stop.</span><br></pre></td></tr></table></figure>
+
+<p>在浏览器打开 <code>http://localhost:4000/</code> 即可查看本地站点。按 <code>Ctrl+C</code> 停止服务。</p>
+<h3 id="创建新文章"><a href="#创建新文章" class="headerlink" title="创建新文章"></a>创建新文章</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new <span class="string">&quot;文章标题&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>会在 <code>source/_posts/</code> 下生成带 Front Matter 的 Markdown 文件。编辑正文后，再次执行 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo s</code> 预览效果。</p>
+<p><strong>文章 Front Matter 示例</strong>（即每篇文章开头的 YAML 块）：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">文章标题</span></span><br><span class="line"><span class="attr">date:</span> <span class="number">2026-06-11 20:00:00</span></span><br><span class="line"><span class="attr">updated:</span> <span class="number">2026-06-12 10:00:00</span></span><br><span class="line"><span class="attr">tags:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">标签一</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">标签二</span></span><br><span class="line"><span class="attr">categories:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">分类名</span></span><br><span class="line"><span class="attr">cover:</span> <span class="string">/images/cover.jpg</span>   <span class="comment"># 头图路径，相对于 source 目录</span></span><br><span class="line"><span class="attr">toc:</span> <span class="literal">true</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p>正文从 <code>---</code> 下方开始，使用标准 Markdown 语法撰写即可。</p>
+<hr>
+<h2 id="推送到-GitHub-进行远程托管"><a href="#推送到-GitHub-进行远程托管" class="headerlink" title="推送到 GitHub 进行远程托管"></a>推送到 GitHub 进行远程托管</h2><h3 id="安装-Git-部署插件"><a href="#安装-Git-部署插件" class="headerlink" title="安装 Git 部署插件"></a>安装 Git 部署插件</h3><p>在博客根目录（<code>MyBlog</code>）下执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+
+<p>该插件会读取 <code>_config.yml</code> 中的 <code>deploy</code> 配置，将 <code>public/</code> 目录推送到指定 Git 仓库。</p>
+<h3 id="配置部署信息"><a href="#配置部署信息" class="headerlink" title="配置部署信息"></a>配置部署信息</h3><p>在 <code>_config.yml</code> 末尾添加（将 <code>XXXX</code> 替换为你的 GitHub 用户名）：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">git@github.com:XXXX/XXXX.github.io.git</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
+
+<p>若你的默认分支为 <code>master</code>，将 <code>branch</code> 改为 <code>master</code>。</p>
+<h3 id="配置-SSH-密钥"><a href="#配置-SSH-密钥" class="headerlink" title="配置 SSH 密钥"></a>配置 SSH 密钥</h3><p>GitHub 通过 SSH 公钥识别你的身份，<strong>切勿将私钥上传或泄露</strong>。</p>
+<p><strong>1. 生成密钥对</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t ed25519 -C <span class="string">&quot;your_email@example.com&quot;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>若系统不支持 ed25519，可使用：<code>ssh-keygen -t rsa -b 4096 -C &quot;your_email@example.com&quot;</code></p>
+</blockquote>
+<p>按提示回车即可使用默认路径 <code>~/.ssh/id_ed25519</code>（或 <code>id_rsa</code>）。可选设置 passphrase 增加安全性。</p>
+<p><strong>2. 将公钥添加到 GitHub</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> ~/.ssh/id_ed25519.pub   <span class="comment"># 或 cat ~/.ssh/id_rsa.pub</span></span><br></pre></td></tr></table></figure>
+
+<p>复制输出的整行内容，在 GitHub：<strong>头像 → Settings → SSH and GPG keys → New SSH key</strong>，Title 随意填写，Key 中粘贴公钥并保存。</p>
+<p><strong>3. 测试连接</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -T git@github.com</span><br></pre></td></tr></table></figure>
+
+<p>首次连接输入 <code>yes</code>，若出现 <code>Hi 用户名! You&#39;ve successfully authenticated...</code> 即表示配置成功。</p>
+<h3 id="一键部署"><a href="#一键部署" class="headerlink" title="一键部署"></a>一键部署</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean    <span class="comment"># 清理</span></span><br><span class="line">hexo generate <span class="comment"># 生成，缩写 hexo g</span></span><br><span class="line">hexo deploy   <span class="comment"># 部署，缩写 hexo d</span></span><br></pre></td></tr></table></figure>
+
+<p>也可合并为一条命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</span><br></pre></td></tr></table></figure>
+
+<p>推送完成后，打开 GitHub 仓库页面，应能看到最新提交。进入 <strong>Settings → Pages</strong>（或仓库右侧 <strong>Deployments</strong>），等待 GitHub Pages 构建完成（通常 1～3 分钟）。</p>
+<p>构建成功后，访问：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://你的用户名.github.io/</span><br></pre></td></tr></table></figure>
+
+<p>即可看到线上站点（首次部署后若暂时 404，稍等片刻再刷新）。</p>
+<hr>
+<h2 id="日常使用流程"><a href="#日常使用流程" class="headerlink" title="日常使用流程"></a>日常使用流程</h2><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>命令 &#x2F; 操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>写新文章</td>
+<td><code>hexo new &quot;标题&quot;</code> → 编辑 <code>source/_posts/xxx.md</code></td>
+</tr>
+<tr>
+<td>本地预览</td>
+<td><code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo s</code></td>
+</tr>
+<tr>
+<td>发布上线</td>
+<td><code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code></td>
+</tr>
+<tr>
+<td>更新主题</td>
+<td>进入 <code>themes/主题名</code> 执行 <code>git pull</code>，再重新 generate</td>
+</tr>
+</tbody></table>
+<p>建议在项目根目录添加 <code>.gitignore</code>（Hexo 初始化通常已包含），<strong>不要</strong>把整站源码误推到 <code>用户名.github.io</code> 仓库——该仓库一般只存放 <code>public/</code> 生成的静态文件；博客源码可另建私有仓库备份。</p>
+<hr>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><p><strong>Q：<code>hexo d</code> 报错 <code>Permission denied (publickey)</code></strong><br>A：检查 SSH 公钥是否已添加到 GitHub，并执行 <code>ssh -T git@github.com</code> 验证。</p>
+<p><strong>Q：网页样式错乱或修改不生效</strong><br>A：先执行 <code>hexo clean</code> 再 <code>hexo g</code>，浏览器强制刷新（Ctrl+F5）。</p>
+<p><strong>Q：GitHub Pages 显示 404</strong><br>A：确认仓库名为 <code>用户名.github.io</code>、默认分支与 <code>deploy.branch</code> 一致，并等待 Deployments 状态为绿色。</p>
+<p><strong>Q：图片无法显示</strong><br>A：图片应放在 <code>source</code> 下（如 <code>source/images/</code>），Markdown 中引用路径以 <code>/</code> 开头，例如 <code>![描述](/images/photo.jpg)</code>。</p>
+<p><strong>Q：npm 安装慢或失败</strong><br>A：可切换国内镜像：<code>npm config set registry https://registry.npmmirror.com</code>（仅影响本机 npm，与 Hexo 部署无关）。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过本文流程，你可以：</p>
+<ol>
+<li>在 Linux 上安装 Node.js 与 Hexo；</li>
+<li>本地初始化博客、更换主题并预览；</li>
+<li>配置 SSH 与 <code>hexo-deployer-git</code>，一键部署到 GitHub Pages；</li>
+<li>通过 <code>hexo new</code> 持续写作并发布。</li>
+</ol>
+<p>静态博客的优势在于访问速度快、维护成本低、内容与样式完全自主。后续可按需接入评论（如 Giscus）、统计、搜索插件等，逐步完善个人站点。祝写作愉快。</p>
+
+    <p><img src="https://i.dawnlab.me/53a8c7cf3ad77a0f0a456ce2c6afe88a.png" loading="lazy"></p>
+
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>John Doe<br>
+        <strong>Link：</strong><a href="http://example.com/2026/06/11/BlogSet/" title="http:&#x2F;&#x2F;example.com&#x2F;2026&#x2F;06&#x2F;11&#x2F;BlogSet&#x2F;" target="_blank" rel="noopener">http:&#x2F;&#x2F;example.com&#x2F;2026&#x2F;06&#x2F;11&#x2F;BlogSet&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+   
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/GitHub-Pages/" rel="tag">GitHub Pages</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/Hexo/" rel="tag">Hexo</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%AE%B0%E5%BD%95/" rel="tag">记录</a>
+    
+</div>
+  
+  
+    <script async src="/js/copy-codeblock.js?v=1781194891320"></script>
+  
+
+  
+</div></div><div class="nexmoe-post-right">    <div class="nexmoe-fixed">
+        <div class="nexmoe-tool">
+
+            
+
+            
+            
+            <button class="mdui-fab catalog" style="overflow:unset;">
+                <i class="nexmoefont icon-i-catalog"></i>
+                <div class="nexmoe-toc">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E7%AE%80%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">整体简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E8%BF%87%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">准备过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%B3%A8%E5%86%8C-GitHub-%E8%B4%A6%E5%8F%B7"><span class="toc-number">2.1.</span> <span class="toc-text">1. 注册 GitHub 账号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%88%9B%E5%BB%BA-GitHub-Pages-%E4%BB%93%E5%BA%93"><span class="toc-number">2.2.</span> <span class="toc-text">2. 创建 GitHub Pages 仓库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%AE%89%E8%A3%85-Node-js%E3%80%81npm-%E4%B8%8E-Hexo"><span class="toc-number">2.3.</span> <span class="toc-text">3. 安装 Node.js、npm 与 Hexo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%BA%E7%AB%8B%E6%9C%AC%E5%9C%B0%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99"><span class="toc-number">3.</span> <span class="toc-text">建立本地博客网站</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%B9%E7%9B%AE"><span class="toc-number">3.1.</span> <span class="toc-text">初始化项目</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE-config-yml"><span class="toc-number">3.2.</span> <span class="toc-text">全局配置 _config.yml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E4%B8%8E%E5%88%87%E6%8D%A2%E4%B8%BB%E9%A2%98"><span class="toc-number">3.3.</span> <span class="toc-text">安装与切换主题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88"><span class="toc-number">3.4.</span> <span class="toc-text">本地预览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%96%B0%E6%96%87%E7%AB%A0"><span class="toc-number">3.5.</span> <span class="toc-text">创建新文章</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A8%E9%80%81%E5%88%B0-GitHub-%E8%BF%9B%E8%A1%8C%E8%BF%9C%E7%A8%8B%E6%89%98%E7%AE%A1"><span class="toc-number">4.</span> <span class="toc-text">推送到 GitHub 进行远程托管</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-Git-%E9%83%A8%E7%BD%B2%E6%8F%92%E4%BB%B6"><span class="toc-number">4.1.</span> <span class="toc-text">安装 Git 部署插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%83%A8%E7%BD%B2%E4%BF%A1%E6%81%AF"><span class="toc-number">4.2.</span> <span class="toc-text">配置部署信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-SSH-%E5%AF%86%E9%92%A5"><span class="toc-number">4.3.</span> <span class="toc-text">配置 SSH 密钥</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2"><span class="toc-number">4.4.</span> <span class="toc-text">一键部署</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%B8%B8%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">5.</span> <span class="toc-text">日常使用流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol>
+                </div>
+            </button>
+            
+
+            
+
+            <a href="#nexmoe-content" class="backtop toc-link" aria-label="Back To Top" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+        </div>
+    </div>
+</div></div><div id="nexmoe-footer"><!--!--></div><div id="nexmoe-search-space"><div class="search-container"><div class="search-header"><div class="search-input-container"><input class="search-input" type="text" placeholder="Search" onInput="sinput();"></div><a class="search-close" onclick="sclose();">×</a></div><div class="search-body"></div></div></div><div><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2058306854838448" crossorigin="anonymous"></script>
+</div></body></html>
