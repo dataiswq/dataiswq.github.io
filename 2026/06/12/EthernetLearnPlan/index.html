@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="en"><head>
+<title>1G/10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录 - Hexo</title>
+<meta charset="UTF-8">
+<meta name="keywords" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<meta name="description" content="以 IEEE 802.3 为主线，系统学习 1000BASE-X 与 10GBASE-R 的 MAC&#x2F;PCS 层，并规划 RTL 架构、仿真与 FPGA 验证的完整路线。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1G&#x2F;10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录">
+<meta property="og:url" content="https://dataiswq.github.io/2026/06/12/EthernetLearnPlan/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="以 IEEE 802.3 为主线，系统学习 1000BASE-X 与 10GBASE-R 的 MAC&#x2F;PCS 层，并规划 RTL 架构、仿真与 FPGA 验证的完整路线。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-06-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-11T16:00:00.000Z">
+<meta property="article:author" content="时间">
+<meta property="article:tag" content="Ethernet">
+<meta property="article:tag" content="IEEE802.3">
+<meta property="article:tag" content="MAC">
+<meta property="article:tag" content="PCS">
+<meta property="article:tag" content="RTL">
+<meta name="twitter:card" content="summary">
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.css">
+<link rel="stylesheet" href="/lib/mdui_043tiny/mdui.css">
+
+
+<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1781275528083">
+
+<link rel="stylesheet" href="/css/style.css?v=1781275528083">
+
+
+
+
+    
+        <link rel="stylesheet" href="/custom.css?v=1781275528083">
+    
+
+
+
+<script src="/lib/mdui_043tiny/mdui.js" async></script>
+<script src="/lib/fancybox/fancybox.umd.js" async></script>
+<script src="/lib/lax.min.js" async></script>
+
+
+<script async src="/js/app.js?v=1781275528084"></script>
+
+ 
+
+
+
+<link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+<meta name="generator" content="Hexo 8.1.2"></head><body class="nexmoe mdui-drawer-body-left"><div id="nexmoe-background"><div class="nexmoe-bg" style="background-image: url(/Picture/头像.jpg)"></div><div class="mdui-appbar mdui-shadow-0"><div class="mdui-toolbar"><a class="mdui-btn mdui-btn-icon mdui-ripple" mdui-drawer="{target: &#039;#drawer&#039;, swipe: true}" title="menu"><i class="mdui-icon nexmoefont icon-menu"></i></a><div class="mdui-toolbar-spacer"></div><a class="mdui-btn mdui-btn-icon" href="/" title="时间"><img src="/Picture/头像.jpg" alt="时间"></a></div></div></div><div id="nexmoe-header"><div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="时间">
+            <img src="/Picture/头像.jpg" alt="时间" alt="时间">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>3</div>
+        <div><span>Tags</span>8</div>
+        <div><span>Categories</span>2</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+    </div>
+    
+    
+        
+        <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+
+
+
+
+    
+        
+        <div class="nexmoe-widget-wrap">
+	<div class="nexmoe-widget nexmoe-social">
+		<a
+			class="mdui-ripple"
+			href="https://dataiswq.github.io/"
+			target="_blank"
+			mdui-tooltip="{content: 'GitHub'}"
+			style="
+				color: rgb(25, 23, 23);
+				background-color: rgba(25, 23, 23, .1);
+			"
+		>
+			<i
+				class="nexmoefont icon-github"
+			></i> </a
+		>
+	</div>
+</div>
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/学习计划/">学习计划</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/建立博客/">建立博客</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/Ethernet/" style="font-size: 10px;">Ethernet</a> <a href="/tags/GitHub-Pages/" style="font-size: 10px;">GitHub Pages</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/IEEE802-3/" style="font-size: 10px;">IEEE802.3</a> <a href="/tags/MAC/" style="font-size: 10px;">MAC</a> <a href="/tags/PCS/" style="font-size: 10px;">PCS</a> <a href="/tags/RTL/" style="font-size: 10px;">RTL</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">记录</a>
+    </div>
+    
+      <script>
+        var maxTagcloud = parseInt(17);
+        var tags_length = parseInt(8);
+        var tags_arr = [];
+        for(var i = 0; i < tags_length; i++){
+          tags_arr.push(i);
+        }
+        tags_arr.sort(function (l, r) {
+          return Math.random() > 0.5 ? -1 : 1;
+        });
+        tags_arr = tags_arr.slice(0, maxTagcloud < tags_length ? tags_length - maxTagcloud : 0);
+        for(var tag_i = 0; tag_i < tags_arr.length; tag_i++){
+          document.getElementById("randomtagcloud").children[tags_arr[tag_i]].style.display = 'none';
+        }
+      </script>
+    
+  </div>
+
+    
+        
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/">2026</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/06/12/EthernetLearnPlan/">1G/10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/BlogSet/">Hexo 静态博客搭建指南——从本地到 GitHub Pages</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+   
+    <div class="nexmoe-copyright">
+        &copy; 2026 时间
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer --></div><div id="nexmoe-content"><div class="nexmoe-primary"><div class="nexmoe-post">
+  <article>
+    
+        <div class="nexmoe-post-cover absolute" style="padding-top: NaN%;"> 
+            <img src="/Picture/烟云.jpg" alt="1G/10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录" loading="lazy">
+            <h1>1G/10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录</h1>
+        </div>
+    
+    
+    <div class="nexmoe-post-meta">
+    <div class="nexmoe-rainbow">
+        <a class="nexmoefont icon-calendar-fill">2026年06月12日</a>
+        
+            <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习计划</a>
+        
+        
+    </div>
+    
+    
+    
+    
+    
+</div>
+
+    <h2 id="关于本系列"><a href="#关于本系列" class="headerlink" title="关于本系列"></a>关于本系列</h2><p>本系列记录我从 <strong>IEEE 802.3</strong> 协议研读到 <strong>MAC&#x2F;PCS RTL IP</strong> 交付的全过程，范围聚焦：</p>
+<table>
+<thead>
+<tr>
+<th>纳入</th>
+<th>跳过</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1G <strong>1000BASE-X</strong>（8B&#x2F;10B、Clause 37 自协商）</td>
+<td>1000BASE-T 铜缆 PHY（Clause 35）</td>
+</tr>
+<tr>
+<td>10G <strong>10GBASE-R</strong>（64B&#x2F;66B、Clause 73 自协商）</td>
+<td>RS-FEC &#x2F; BASE-R FEC（Clause 74、91 等）</td>
+</tr>
+<tr>
+<td>GMII &#x2F; XGMII、MAC 帧格式</td>
+<td>10GBASE-T 铜缆自协商（Clause 98 等）</td>
+</tr>
+</tbody></table>
+<p><strong>参考标准</strong>：IEEE 802.3-2018 或 802.3-2022<br><strong>时区</strong>：全部计划以 <strong>北京时间（UTC+8）</strong> 为准。</p>
+<blockquote>
+<p>第一阶段逐日任务、产出清单与自测题详见仓库 <a href="plan/Plan.md"><code>plan/Plan.md</code></a>；本文侧重路线图、检查点与阶段交付物，两处内容同步维护。</p>
+</blockquote>
+<hr>
+<h2 id="协议栈速览"><a href="#协议栈速览" class="headerlink" title="协议栈速览"></a>协议栈速览</h2><p>802.3 分层（自 MAC 向下）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────┐</span><br><span class="line">│  MAC          组帧 / 解帧 / FCS / 流控   │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  RS（可选）   10G 速率匹配 / 复用拆分    │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PCS          8B/10B 或 64B/66B 编码     │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PMA          串并转换 / 时钟恢复        │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PMD          物理介质（光纤 / 背板等）    │</span><br><span class="line">└─────────────────────────────────────────┘</span><br><span class="line">         ▲ GMII（1G）  /  XGMII（10G）</span><br><span class="line">         └── MAC 与 PCS 的标准分界接口</span><br></pre></td></tr></table></figure>
+
+<p><strong>1G vs 10G 核心差异（本系列重点）</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>1G（1000BASE-X）</th>
+<th>10G（10GBASE-R）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC–PHY 接口</td>
+<td>GMII，8 bit 数据</td>
+<td>XGMII，32 bit 数据 + 4 bit 控制</td>
+</tr>
+<tr>
+<td>PCS 编码</td>
+<td>8B&#x2F;10B（Annex 4A）</td>
+<td>64B&#x2F;66B</td>
+</tr>
+<tr>
+<td>带宽效率</td>
+<td>~80%</td>
+<td>~97%</td>
+</tr>
+<tr>
+<td>自协商</td>
+<td>Clause 37（&#x2F;C&#x2F; 有序集）</td>
+<td>Clause 73（Base Page）</td>
+</tr>
+<tr>
+<td>典型串行速率</td>
+<td>1.25 Gbps</td>
+<td>10.3125 Gbps</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="项目概述"><a href="#项目概述" class="headerlink" title="项目概述"></a>项目概述</h2><p>最终目标：</p>
+<ol>
+<li>完成协议学习与阅读笔记；</li>
+<li>输出 MAC &#x2F; PCS 的 <strong>RTL 整体架构</strong>（模块划分、接口定义、结构图与简要文档）；</li>
+<li>完成 RTL 编码与仿真验证；</li>
+<li>在 FPGA 上进行板级验证，并与其他模块联调；</li>
+<li>沉淀 RTL 编写与验证环境，初步完善 RTL IP 库。</li>
+</ol>
+<hr>
+<h2 id="总体路线图"><a href="#总体路线图" class="headerlink" title="总体路线图"></a>总体路线图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">gantt</span><br><span class="line">    title 四阶段路线图（北京时间）</span><br><span class="line">    dateFormat YYYY-MM-DD</span><br><span class="line">    axisFormat %m/%d</span><br><span class="line">    section 协议学习</span><br><span class="line">    第一阶段 MAC/PCS/AN     :a1, 2026-06-13, 18d</span><br><span class="line">    section RTL 架构</span><br><span class="line">    第二阶段 模块规划与文档   :a2, 2026-07-01, 14d</span><br><span class="line">    section 编码验证</span><br><span class="line">    第三阶段 RTL + 仿真       :a3, 2026-07-15, 30d</span><br><span class="line">    section 板级验证</span><br><span class="line">    第四阶段 FPGA 联调        :a4, after a3, 30d</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时间（北京时间）</th>
+<th>可用时长</th>
+<th>核心目标</th>
+<th>主要交付物</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一阶段</strong></td>
+<td>6&#x2F;13 – 6&#x2F;30</td>
+<td>86 h</td>
+<td>学习 MAC &#x2F; PCS &#x2F; 自协商</td>
+<td>802.3 阅读笔记、自测通过</td>
+</tr>
+<tr>
+<td><strong>第二阶段</strong></td>
+<td>7&#x2F;1 – 7&#x2F;14</td>
+<td>112 h</td>
+<td>RTL 整体架构规划</td>
+<td>模块结构图、接口说明、设计文档</td>
+</tr>
+<tr>
+<td><strong>第三阶段</strong></td>
+<td>7&#x2F;15 起（约 4 周）</td>
+<td>待定</td>
+<td>RTL 编码与仿真验证</td>
+<td>可综合 RTL、Testbench、仿真报告</td>
+</tr>
+<tr>
+<td><strong>第四阶段</strong></td>
+<td>第三阶段通过后</td>
+<td>待定</td>
+<td>FPGA 板级验证与联调</td>
+<td>上板 bitstream、联调记录</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>第三、四阶段起止日将在前一阶段评审后更新本文「更新记录」。</p>
+</blockquote>
+<hr>
+<h2 id="第一阶段：协议学习"><a href="#第一阶段：协议学习" class="headerlink" title="第一阶段：协议学习"></a>第一阶段：协议学习</h2><p>该阶段核心是学习 <strong>MAC</strong>、复习 <strong>PCS</strong>，输出完整的 <strong>802.3 阅读笔记</strong>。需在 <strong>6 月 30 日</strong>（北京时间）前完成。</p>
+<h3 id="时间与范围"><a href="#时间与范围" class="headerlink" title="时间与范围"></a>时间与范围</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>日期</th>
+<th>每日时长</th>
+<th>小计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全天学习</td>
+<td>6&#x2F;13、6&#x2F;14、6&#x2F;19、6&#x2F;20、6&#x2F;21、6&#x2F;27、6&#x2F;28</td>
+<td>8 h</td>
+<td><strong>56 h</strong></td>
+</tr>
+<tr>
+<td>碎片学习</td>
+<td>6&#x2F;15–6&#x2F;18、6&#x2F;22–6&#x2F;25、6&#x2F;29–6&#x2F;30</td>
+<td>3 h</td>
+<td><strong>30 h</strong></td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td>2026-06-13 – 2026-06-30</td>
+<td>—</td>
+<td><strong>86 h</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>6&#x2F;26（周五）</strong> 为休息日，不计入 86 h；6&#x2F;25 与 6&#x2F;27 之间预留一天缓冲。</p>
+</blockquote>
+<p><strong>学习范围</strong>：MAC 帧格式、GMII &#x2F; XGMII、1000BASE-X（8B&#x2F;10B）、10GBASE-R（64B&#x2F;66B）、1G&#x2F;10G 自协商。</p>
+<h3 id="802-3-阅读章节"><a href="#802-3-阅读章节" class="headerlink" title="802.3 阅读章节"></a>802.3 阅读章节</h3><table>
+<thead>
+<tr>
+<th>条款</th>
+<th>内容</th>
+<th>计划日期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Clause 1</td>
+<td>概述与架构</td>
+<td>6&#x2F;13</td>
+</tr>
+<tr>
+<td>Clause 3</td>
+<td>定义与缩写</td>
+<td>6&#x2F;13</td>
+</tr>
+<tr>
+<td>Clause 4</td>
+<td>MAC 帧格式与操作</td>
+<td>6&#x2F;13 – 6&#x2F;15</td>
+</tr>
+<tr>
+<td>Clause 31</td>
+<td>MAC Control（略读）</td>
+<td>6&#x2F;14</td>
+</tr>
+<tr>
+<td>Clause 34</td>
+<td>GMII</td>
+<td>6&#x2F;16 – 6&#x2F;17</td>
+</tr>
+<tr>
+<td>Clause 36</td>
+<td>1000BASE-X PCS&#x2F;PMA</td>
+<td>6&#x2F;18 – 6&#x2F;21</td>
+</tr>
+<tr>
+<td>Annex 4A</td>
+<td>8B&#x2F;10B 块编码</td>
+<td>6&#x2F;20</td>
+</tr>
+<tr>
+<td>Clause 37</td>
+<td>1000BASE-X 自协商</td>
+<td>6&#x2F;22</td>
+</tr>
+<tr>
+<td>Clause 46</td>
+<td>XGMII</td>
+<td>6&#x2F;23 – 6&#x2F;24</td>
+</tr>
+<tr>
+<td>Clause 48</td>
+<td>10GBASE-R PCS</td>
+<td>6&#x2F;25、6&#x2F;27 – 6&#x2F;28</td>
+</tr>
+<tr>
+<td>Clause 73</td>
+<td>10GBASE-R 自协商</td>
+<td>6&#x2F;29</td>
+</tr>
+<tr>
+<td>Clause 49</td>
+<td>10GBASE-X PCS（对照）</td>
+<td>6&#x2F;29</td>
+</tr>
+</tbody></table>
+<h3 id="阶段划分"><a href="#阶段划分" class="headerlink" title="阶段划分"></a>阶段划分</h3><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>内容</th>
+<th>计划时长</th>
+<th>日期范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>阶段一</td>
+<td>MAC 公共基础</td>
+<td>19 h</td>
+<td>6&#x2F;13 – 6&#x2F;15</td>
+</tr>
+<tr>
+<td>阶段二</td>
+<td>1G：GMII + 1000BASE-X PCS + 自协商</td>
+<td>27 h</td>
+<td>6&#x2F;16 – 6&#x2F;22</td>
+</tr>
+<tr>
+<td>阶段三</td>
+<td>10G：XGMII + 10GBASE-R PCS</td>
+<td>28 h</td>
+<td>6&#x2F;23 – 6&#x2F;28</td>
+</tr>
+<tr>
+<td>阶段四</td>
+<td>10G 自协商 + 10GBASE-X 对照 + 总复习</td>
+<td>12 h</td>
+<td>6&#x2F;29 – 6&#x2F;30</td>
+</tr>
+</tbody></table>
+<h3 id="日程模板"><a href="#日程模板" class="headerlink" title="日程模板"></a>日程模板</h3><p><strong>8 小时日（09:00–19:00，净学习 8 h）</strong></p>
+<table>
+<thead>
+<tr>
+<th>时段</th>
+<th>北京时间</th>
+<th>净时长</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>上午</td>
+<td>09:00 – 13:00</td>
+<td>4 h</td>
+<td>中间 10:30 休息 10 min</td>
+</tr>
+<tr>
+<td>午休</td>
+<td>13:00 – 14:00</td>
+<td>—</td>
+<td>用餐、走动</td>
+</tr>
+<tr>
+<td>下午</td>
+<td>14:00 – 18:00</td>
+<td>4 h</td>
+<td>中间 16:00 休息 10 min</td>
+</tr>
+<tr>
+<td>收尾</td>
+<td>18:00 – 19:00</td>
+<td>—</td>
+<td>整理笔记、更新 checklist（不计入 8 h）</td>
+</tr>
+</tbody></table>
+<p><strong>3 小时日（工作日晚上 20:30–23:30）</strong></p>
+<table>
+<thead>
+<tr>
+<th>时段</th>
+<th>北京时间</th>
+<th>净时长</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>晚间</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>中间 22:00 休息 10 min</td>
+</tr>
+</tbody></table>
+<h3 id="日历一览"><a href="#日历一览" class="headerlink" title="日历一览"></a>日历一览</h3><table>
+<thead>
+<tr>
+<th>日期</th>
+<th>星期</th>
+<th>时段</th>
+<th>时长</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>06-13</td>
+<td>周六</td>
+<td>09:00 – 19:00</td>
+<td>8 h</td>
+<td>MAC 基础（上）</td>
+</tr>
+<tr>
+<td>06-14</td>
+<td>周日</td>
+<td>09:00 – 19:00</td>
+<td>8 h</td>
+<td>MAC 基础（下）</td>
+</tr>
+<tr>
+<td>06-15</td>
+<td>周一</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>MAC 复习</td>
+</tr>
+<tr>
+<td>06-16</td>
+<td>周二</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>GMII 入门</td>
+</tr>
+<tr>
+<td>06-17</td>
+<td>周三</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>GMII 时序</td>
+</tr>
+<tr>
+<td>06-18</td>
+<td>周四</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>1G PCS 架构</td>
+</tr>
+<tr>
+<td>06-19</td>
+<td>周五</td>
+<td>09:00 – 19:00</td>
+<td>8 h</td>
+<td>1G PCS TX&#x2F;RX</td>
+</tr>
+<tr>
+<td>06-20</td>
+<td>周六</td>
+<td>09:00 – 19:00</td>
+<td>8 h</td>
+<td>8B&#x2F;10B 深入</td>
+</tr>
+<tr>
+<td>06-21</td>
+<td>周日</td>
+<td>09:00 – 19:00</td>
+<td>8 h</td>
+<td>1G 串联练习</td>
+</tr>
+<tr>
+<td>06-22</td>
+<td>周一</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>1G 自协商 + 复习</td>
+</tr>
+<tr>
+<td>06-23</td>
+<td>周二</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>XGMII 入门</td>
+</tr>
+<tr>
+<td>06-24</td>
+<td>周三</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>XGMII 细节</td>
+</tr>
+<tr>
+<td>06-25</td>
+<td>周四</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>64B&#x2F;66B 入门</td>
+</tr>
+<tr>
+<td>06-26</td>
+<td>周五</td>
+<td>—</td>
+<td>—</td>
+<td><strong>休息</strong></td>
+</tr>
+<tr>
+<td>06-27</td>
+<td>周六</td>
+<td>09:00 – 19:00</td>
+<td>8 h</td>
+<td>10G PCS TX</td>
+</tr>
+<tr>
+<td>06-28</td>
+<td>周日</td>
+<td>09:00 – 19:00</td>
+<td>8 h</td>
+<td>10G PCS RX</td>
+</tr>
+<tr>
+<td>06-29</td>
+<td>周一</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>10G 自协商 + 对照</td>
+</tr>
+<tr>
+<td>06-30</td>
+<td>周二</td>
+<td>20:30 – 23:30</td>
+<td>3 h</td>
+<td>总复习与自测</td>
+</tr>
+</tbody></table>
+<p>逐日时段安排、当日产出与标准子条款见 <a href="plan/Plan.md"><code>plan/Plan.md</code></a>。</p>
+<h3 id="自协商要点"><a href="#自协商要点" class="headerlink" title="自协商要点"></a>自协商要点</h3><table>
+<thead>
+<tr>
+<th>主题</th>
+<th>1G（Clause 37）</th>
+<th>10G（Clause 73）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目的</td>
+<td>交换链路能力、完成建链</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>载体</td>
+<td>&#x2F;C&#x2F; 有序集 + Link Code Word</td>
+<td>Base Page 交换</td>
+</tr>
+<tr>
+<td>核心状态</td>
+<td>ABILITY_DETECT → ACK_DETECT → COMPLETE</td>
+<td>类似框架，字段与超时不同</td>
+</tr>
+<tr>
+<td>与 PCS 关系</td>
+<td>完成后进入 8B&#x2F;10B 数据模式</td>
+<td>完成后进入 64B&#x2F;66B 数据模式</td>
+</tr>
+</tbody></table>
+<h3 id="明确跳过"><a href="#明确跳过" class="headerlink" title="明确跳过"></a>明确跳过</h3><table>
+<thead>
+<tr>
+<th>条款</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Clause 28</td>
+<td>100BASE-TX 自协商（选读，不单独排期）</td>
+</tr>
+<tr>
+<td>Clause 35</td>
+<td>1000BASE-T 铜缆</td>
+</tr>
+<tr>
+<td>Clause 74</td>
+<td>BASE-R FEC</td>
+</tr>
+<tr>
+<td>Clause 91、107、108 等</td>
+<td>RS-FEC</td>
+</tr>
+<tr>
+<td>Clause 98 等</td>
+<td>10GBASE-T 铜缆自协商</td>
+</tr>
+</tbody></table>
+<h3 id="学习方法"><a href="#学习方法" class="headerlink" title="学习方法"></a>学习方法</h3><ol>
+<li>先看框图，再看状态机与 TX&#x2F;RX 细节。</li>
+<li>8 小时日攻坚新内容；3 小时日以复习、自测为主。</li>
+<li>Annex 4A 理解原理即可，不必背完整编码表。</li>
+<li>每日收尾 15 分钟更新 checklist，标注疑问点。</li>
+</ol>
+<h3 id="阶段检查点"><a href="#阶段检查点" class="headerlink" title="阶段检查点"></a>阶段检查点</h3><p><strong>阶段一（6&#x2F;15 后）</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 能独立描述 MAC 帧各字段及作用</li>
+<li><input disabled="" type="checkbox"> 能解释 MAC 与 PCS 的边界</li>
+</ul>
+<p><strong>阶段二（6&#x2F;22 后）</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 能画出 1000BASE-X 从 MAC 到 PMA 的数据流</li>
+<li><input disabled="" type="checkbox"> 能说明 1G 自协商建链过程</li>
+</ul>
+<p><strong>阶段三 &#x2F; 四（6&#x2F;30 前）</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> 能对比 GMII 与 XGMII</li>
+<li><input disabled="" type="checkbox"> 能解释 64B&#x2F;66B 块类型</li>
+<li><input disabled="" type="checkbox"> 能对比 Clause 37 与 Clause 73 自协商差异</li>
+</ul>
+<h3 id="总复习自测题"><a href="#总复习自测题" class="headerlink" title="总复习自测题"></a>总复习自测题</h3><p>完成 6&#x2F;30 前闭卷作答（参考答案计划在笔记整理后另文发布）：</p>
+<ol>
+<li>MAC 帧中前导码、SFD、FCS 各占多少字节？作用是什么？</li>
+<li>GMII 与 XGMII 的主要区别？</li>
+<li>8B&#x2F;10B 中 running disparity 是什么？为何需要？</li>
+<li>&#x2F;S&#x2F;、&#x2F;T&#x2F;、&#x2F;R&#x2F; 有序集各出现在帧的什么位置？</li>
+<li>64B&#x2F;66B 同步头 <code>01</code> 和 <code>10</code> 分别表示什么？</li>
+<li>10GBASE-R 扰码器的作用？</li>
+<li>画出 1G 与 10G 从 MAC 到 PCS 的数据流对比图。</li>
+<li>Link Code Word 中 Technology Ability 字段的作用？</li>
+<li>自协商 COMPLETE 前经历哪些主要状态？</li>
+<li>Clause 37 与 Clause 73 的主要差异？</li>
+</ol>
+<h3 id="进度追踪"><a href="#进度追踪" class="headerlink" title="进度追踪"></a>进度追踪</h3><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>计划 h</th>
+<th>实际 h</th>
+<th>完成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>阶段一 MAC 基础</td>
+<td>19</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>阶段二 1G PCS + 自协商</td>
+<td>27</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>阶段三 10G PCS</td>
+<td>28</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>阶段四 自协商 + 总复习</td>
+<td>12</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>86</strong></td>
+<td></td>
+<td>☐</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="第二阶段：RTL-架构规划"><a href="#第二阶段：RTL-架构规划" class="headerlink" title="第二阶段：RTL 架构规划"></a>第二阶段：RTL 架构规划</h2><p>该阶段核心是规划 <strong>MAC 与 PCS 的 RTL 整体结构</strong>，划分模块功能与接口。每个模块需交付 <strong>结构框图</strong> 与 <strong>简要设计说明</strong>（功能、接口表、状态机概要）。</p>
+<p><strong>时间</strong>：7&#x2F;1 – 7&#x2F;14（北京时间），每天 8 h，共 <strong>112 h</strong>。<br><strong>边界</strong>：只做架构与文档，不写可综合 RTL，不做仿真。</p>
+<h3 id="预期模块划分"><a href="#预期模块划分" class="headerlink" title="预期模块划分"></a>预期模块划分</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">eth_mac_pcs_top</span><br><span class="line">├── mac_top</span><br><span class="line">│   ├── mac_tx          # 组帧、Pad、FCS 生成</span><br><span class="line">│   ├── mac_rx          # 解帧、地址过滤、FCS 校验</span><br><span class="line">│   ├── mac_fc          # 流控（PAUSE，可选）</span><br><span class="line">│   ├── gmii_if         # 1G MAC–PHY 接口</span><br><span class="line">│   └── xgmii_if        # 10G MAC–PHY 接口</span><br><span class="line">├── pcs_top</span><br><span class="line">│   ├── pcs_1g          # 1000BASE-X：8B/10B、有序集</span><br><span class="line">│   ├── pcs_10g         # 10GBASE-R：64B/66B、扰码</span><br><span class="line">│   └── pcs_an          # 自协商（1G Clause 37 / 10G Clause 73）</span><br><span class="line">└── (公共) fifo / clk_rst / reg_if</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>实际命名与层级可在 7&#x2F;1 – 7&#x2F;3 顶层设计阶段最终确定。</p>
+</blockquote>
+<h3 id="阶段划分-1"><a href="#阶段划分-1" class="headerlink" title="阶段划分"></a>阶段划分</h3><table>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>时间</th>
+<th>时长</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2.1 顶层设计</td>
+<td>7&#x2F;1 – 7&#x2F;3</td>
+<td>24 h</td>
+<td>目录规范、顶层框图、接口规范模板、时钟域划分</td>
+</tr>
+<tr>
+<td>2.2 MAC 模块</td>
+<td>7&#x2F;4 – 7&#x2F;7</td>
+<td>32 h</td>
+<td>MAC TX&#x2F;RX&#x2F;接口 模块图与接口定义</td>
+</tr>
+<tr>
+<td>2.3 1G PCS</td>
+<td>7&#x2F;8 – 7&#x2F;10</td>
+<td>24 h</td>
+<td>8B&#x2F;10B、有序集、链路状态机文档</td>
+</tr>
+<tr>
+<td>2.4 10G PCS + AN</td>
+<td>7&#x2F;11 – 7&#x2F;13</td>
+<td>24 h</td>
+<td>64B&#x2F;66B、自协商、顶层集成图</td>
+</tr>
+<tr>
+<td>2.5 评审修订</td>
+<td>7&#x2F;14</td>
+<td>8 h</td>
+<td>接口一致性检查、文档索引、遗留项清单</td>
+</tr>
+</tbody></table>
+<h3 id="每日概要"><a href="#每日概要" class="headerlink" title="每日概要"></a>每日概要</h3><table>
+<thead>
+<tr>
+<th>日期</th>
+<th>星期</th>
+<th>主题</th>
+<th>交付物</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>7&#x2F;1</td>
+<td>周三</td>
+<td>设计规范与顶层架构</td>
+<td>目录结构、顶层框图 v0.1</td>
+</tr>
+<tr>
+<td>7&#x2F;2</td>
+<td>周四</td>
+<td>GMII &#x2F; XGMII 接口规范</td>
+<td>接口时序说明、信号表</td>
+</tr>
+<tr>
+<td>7&#x2F;3</td>
+<td>周五</td>
+<td>时钟域与复位策略</td>
+<td>CDC 说明、复位序列文档</td>
+</tr>
+<tr>
+<td>7&#x2F;4</td>
+<td>周六</td>
+<td>MAC TX 路径</td>
+<td>mac_tx 框图 + 接口表</td>
+</tr>
+<tr>
+<td>7&#x2F;5</td>
+<td>周日</td>
+<td>MAC RX 路径</td>
+<td>mac_rx 框图 + 接口表</td>
+</tr>
+<tr>
+<td>7&#x2F;6</td>
+<td>周一</td>
+<td>FCS &#x2F; 流控 &#x2F; MAC 顶层</td>
+<td>mac_top 集成图</td>
+</tr>
+<tr>
+<td>7&#x2F;7</td>
+<td>周二</td>
+<td>MAC 模块评审与修订</td>
+<td>MAC 文档 v1.0</td>
+</tr>
+<tr>
+<td>7&#x2F;8</td>
+<td>周三</td>
+<td>1G PCS TX（8B&#x2F;10B 编码）</td>
+<td>pcs_1g_tx 框图 + 接口表</td>
+</tr>
+<tr>
+<td>7&#x2F;9</td>
+<td>周四</td>
+<td>1G PCS RX（对齐与解码）</td>
+<td>pcs_1g_rx 框图 + 接口表</td>
+</tr>
+<tr>
+<td>7&#x2F;10</td>
+<td>周五</td>
+<td>1G 链路状态机</td>
+<td>pcs_1g 状态机概要</td>
+</tr>
+<tr>
+<td>7&#x2F;11</td>
+<td>周六</td>
+<td>10G PCS TX（64B&#x2F;66B）</td>
+<td>pcs_10g_tx 框图 + 接口表</td>
+</tr>
+<tr>
+<td>7&#x2F;12</td>
+<td>周日</td>
+<td>10G PCS RX（同步与解扰）</td>
+<td>pcs_10g_rx 框图 + 接口表</td>
+</tr>
+<tr>
+<td>7&#x2F;13</td>
+<td>周一</td>
+<td>自协商 + 顶层集成</td>
+<td>pcs_an 文档、eth_mac_pcs_top 集成图</td>
+</tr>
+<tr>
+<td>7&#x2F;14</td>
+<td>周二</td>
+<td>全文评审与归档</td>
+<td>设计文档包、Review 记录</td>
+</tr>
+</tbody></table>
+<h3 id="每模块文档模板"><a href="#每模块文档模板" class="headerlink" title="每模块文档模板"></a>每模块文档模板</h3><p>每个模块至少包含：</p>
+<ol>
+<li><strong>功能概述</strong>（1 段）</li>
+<li><strong>结构框图</strong>（含子模块与数据流）</li>
+<li><strong>接口表</strong>（信号名、方向、位宽、时钟域、说明）</li>
+<li><strong>状态机概要</strong>（若有）</li>
+<li><strong>与 802.3 条款的对应关系</strong></li>
+</ol>
+<h3 id="检查点"><a href="#检查点" class="headerlink" title="检查点"></a>检查点</h3><ul>
+<li><input disabled="" type="checkbox"> 顶层至子模块层级清晰，命名统一</li>
+<li><input disabled="" type="checkbox"> GMII &#x2F; XGMII &#x2F; 内部 FIFO 接口定义完整</li>
+<li><input disabled="" type="checkbox"> 1G &#x2F; 10G PCS 复用策略明确（参数化或 generate）</li>
+<li><input disabled="" type="checkbox"> 自协商与 PCS 数据模式的切换关系文档化</li>
+<li><input disabled="" type="checkbox"> 全部模块均有框图 + 接口表</li>
+</ul>
+<h3 id="进度追踪-1"><a href="#进度追踪-1" class="headerlink" title="进度追踪"></a>进度追踪</h3><table>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>计划 h</th>
+<th>实际 h</th>
+<th>完成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2.1 顶层设计</td>
+<td>24</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>2.2 MAC 模块</td>
+<td>32</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>2.3 1G PCS</td>
+<td>24</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>2.4 10G PCS + AN</td>
+<td>24</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>2.5 评审修订</td>
+<td>8</td>
+<td></td>
+<td>☐</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>112</strong></td>
+<td></td>
+<td>☐</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="第三阶段：RTL-编码与仿真验证"><a href="#第三阶段：RTL-编码与仿真验证" class="headerlink" title="第三阶段：RTL 编码与仿真验证"></a>第三阶段：RTL 编码与仿真验证</h2><p><strong>时间</strong>：7&#x2F;15 起，具体日程待第二阶段评审后补充。<br><strong>前提</strong>：第二阶段架构文档评审通过。</p>
+<h3 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h3><ul>
+<li>按架构文档完成 MAC &#x2F; PCS <strong>可综合 RTL</strong>；</li>
+<li>搭建 <strong>Testbench</strong> 与基础验证环境；</li>
+<li>通过模块级与顶层仿真（组帧&#x2F;解帧、编码&#x2F;解码、自协商建链等场景）。</li>
+</ul>
+<h3 id="预期交付物"><a href="#预期交付物" class="headerlink" title="预期交付物"></a>预期交付物</h3><table>
+<thead>
+<tr>
+<th>交付物</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RTL 源码</td>
+<td>分模块目录，含 README</td>
+</tr>
+<tr>
+<td>仿真环境</td>
+<td>Testbench、BFM（GMII&#x2F;XGMII）、波形脚本</td>
+</tr>
+<tr>
+<td>仿真报告</td>
+<td>用例列表、覆盖要点、已知问题</td>
+</tr>
+</tbody></table>
+<h3 id="建议顺序"><a href="#建议顺序" class="headerlink" title="建议顺序"></a>建议顺序</h3><ol>
+<li>MAC TX&#x2F;RX + FCS（不依赖 PCS）</li>
+<li>1G PCS（8B&#x2F;10B loopback）</li>
+<li>10G PCS（64B&#x2F;66B loopback）</li>
+<li>自协商 + MAC&#x2F;PCS 顶层集成仿真</li>
+</ol>
+<h3 id="初步里程碑（待细化）"><a href="#初步里程碑（待细化）" class="headerlink" title="初步里程碑（待细化）"></a>初步里程碑（待细化）</h3><table>
+<thead>
+<tr>
+<th>里程碑</th>
+<th>目标内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M3.1</td>
+<td>MAC 模块仿真通过（GMII&#x2F;XGMII BFM）</td>
+</tr>
+<tr>
+<td>M3.2</td>
+<td>1G PCS 环回仿真通过</td>
+</tr>
+<tr>
+<td>M3.3</td>
+<td>10G PCS 环回仿真通过</td>
+</tr>
+<tr>
+<td>M3.4</td>
+<td>顶层 + 自协商集成仿真通过</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="第四阶段：FPGA-板级验证"><a href="#第四阶段：FPGA-板级验证" class="headerlink" title="第四阶段：FPGA 板级验证"></a>第四阶段：FPGA 板级验证</h2><p><strong>时间</strong>：待定（第三阶段基本通过后启动）。</p>
+<h3 id="目标-1"><a href="#目标-1" class="headerlink" title="目标"></a>目标</h3><ul>
+<li>将 MAC&#x2F;PCS IP 部署至目标 FPGA；</li>
+<li>完成板级 loopback 或与外部 PHY&#x2F;光模块联调；</li>
+<li>与系统其他模块（如 CPU、DMA、其他 IP）对接验证。</li>
+</ul>
+<h3 id="预期交付物-1"><a href="#预期交付物-1" class="headerlink" title="预期交付物"></a>预期交付物</h3><table>
+<thead>
+<tr>
+<th>交付物</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>约束与工程</td>
+<td>XDC&#x2F;SDC、综合实现脚本</td>
+</tr>
+<tr>
+<td>Bitstream</td>
+<td>可运行的 FPGA 配置</td>
+</tr>
+<tr>
+<td>联调记录</td>
+<td>测试步骤、现象、问题与结论</td>
+</tr>
+</tbody></table>
+<h3 id="验证场景（规划）"><a href="#验证场景（规划）" class="headerlink" title="验证场景（规划）"></a>验证场景（规划）</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内部环回</td>
+<td>MAC ↔ PCS 片内环回，确认吞吐与误码</td>
+</tr>
+<tr>
+<td>外部 PHY</td>
+<td>对接 SFP&#x2F;SFP+ 或背板，确认 link up</td>
+</tr>
+<tr>
+<td>系统联调</td>
+<td>与 DMA &#x2F; CPU 侧配合，跑通实际报文</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="相关资源"><a href="#相关资源" class="headerlink" title="相关资源"></a>相关资源</h2><table>
+<thead>
+<tr>
+<th>资源</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="plan/Plan.md"><code>plan/Plan.md</code></a></td>
+<td>第一阶段逐日计划与产出清单</td>
+</tr>
+<tr>
+<td>IEEE 802.3-2018 &#x2F; 802.3-2022</td>
+<td>正式标准文本</td>
+</tr>
+<tr>
+<td>Clause 1 架构图</td>
+<td>各层关系的总入口，建议打印备查</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="更新记录"><a href="#更新记录" class="headerlink" title="更新记录"></a>更新记录</h2><table>
+<thead>
+<tr>
+<th>日期</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-06-12</td>
+<td>创建博客；完成第一阶段详细计划；补充第二至第四阶段框架</td>
+</tr>
+<tr>
+<td>2026-06-12</td>
+<td>修复 Plan 链接路径；补充协议栈速览与 1G&#x2F;10G 对比；精简与 Plan 重复的逐日条目；统一模块命名；补充第三&#x2F;四阶段里程碑</td>
+</tr>
+</tbody></table>
+
+    
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>时间<br>
+        <strong>Link：</strong><a href="https://dataiswq.github.io/2026/06/12/EthernetLearnPlan/" title="https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;06&#x2F;12&#x2F;EthernetLearnPlan&#x2F;" target="_blank" rel="noopener">https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;06&#x2F;12&#x2F;EthernetLearnPlan&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+   
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/Ethernet/" rel="tag">Ethernet</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/IEEE802-3/" rel="tag">IEEE802.3</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/MAC/" rel="tag">MAC</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/PCS/" rel="tag">PCS</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/RTL/" rel="tag">RTL</a>
+    
+</div>
+  
+  
+    <script async src="/js/copy-codeblock.js?v=1781275528053"></script>
+  
+
+  
+</div></div><div class="nexmoe-post-right">    <div class="nexmoe-fixed">
+        <div class="nexmoe-tool">
+
+            
+
+            
+            
+            <button class="mdui-fab catalog" style="overflow:unset;">
+                <i class="nexmoefont icon-i-catalog"></i>
+                <div class="nexmoe-toc">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E6%9C%AC%E7%B3%BB%E5%88%97"><span class="toc-number">1.</span> <span class="toc-text">关于本系列</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E6%A0%88%E9%80%9F%E8%A7%88"><span class="toc-number">2.</span> <span class="toc-text">协议栈速览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E6%A6%82%E8%BF%B0"><span class="toc-number">3.</span> <span class="toc-text">项目概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E4%BD%93%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc-number">4.</span> <span class="toc-text">总体路线图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%8D%8F%E8%AE%AE%E5%AD%A6%E4%B9%A0"><span class="toc-number">5.</span> <span class="toc-text">第一阶段：协议学习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E4%B8%8E%E8%8C%83%E5%9B%B4"><span class="toc-number">5.1.</span> <span class="toc-text">时间与范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#802-3-%E9%98%85%E8%AF%BB%E7%AB%A0%E8%8A%82"><span class="toc-number">5.2.</span> <span class="toc-text">802.3 阅读章节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E5%88%92%E5%88%86"><span class="toc-number">5.3.</span> <span class="toc-text">阶段划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E7%A8%8B%E6%A8%A1%E6%9D%BF"><span class="toc-number">5.4.</span> <span class="toc-text">日程模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%8E%86%E4%B8%80%E8%A7%88"><span class="toc-number">5.5.</span> <span class="toc-text">日历一览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%8D%8F%E5%95%86%E8%A6%81%E7%82%B9"><span class="toc-number">5.6.</span> <span class="toc-text">自协商要点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%8E%E7%A1%AE%E8%B7%B3%E8%BF%87"><span class="toc-number">5.7.</span> <span class="toc-text">明确跳过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95"><span class="toc-number">5.8.</span> <span class="toc-text">学习方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">5.9.</span> <span class="toc-text">阶段检查点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E5%A4%8D%E4%B9%A0%E8%87%AA%E6%B5%8B%E9%A2%98"><span class="toc-number">5.10.</span> <span class="toc-text">总复习自测题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E5%BA%A6%E8%BF%BD%E8%B8%AA"><span class="toc-number">5.11.</span> <span class="toc-text">进度追踪</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%EF%BC%9ARTL-%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92"><span class="toc-number">6.</span> <span class="toc-text">第二阶段：RTL 架构规划</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%84%E6%9C%9F%E6%A8%A1%E5%9D%97%E5%88%92%E5%88%86"><span class="toc-number">6.1.</span> <span class="toc-text">预期模块划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E5%88%92%E5%88%86-1"><span class="toc-number">6.2.</span> <span class="toc-text">阶段划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AF%8F%E6%97%A5%E6%A6%82%E8%A6%81"><span class="toc-number">6.3.</span> <span class="toc-text">每日概要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AF%8F%E6%A8%A1%E5%9D%97%E6%96%87%E6%A1%A3%E6%A8%A1%E6%9D%BF"><span class="toc-number">6.4.</span> <span class="toc-text">每模块文档模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">6.5.</span> <span class="toc-text">检查点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E5%BA%A6%E8%BF%BD%E8%B8%AA-1"><span class="toc-number">6.6.</span> <span class="toc-text">进度追踪</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%EF%BC%9ARTL-%E7%BC%96%E7%A0%81%E4%B8%8E%E4%BB%BF%E7%9C%9F%E9%AA%8C%E8%AF%81"><span class="toc-number">7.</span> <span class="toc-text">第三阶段：RTL 编码与仿真验证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87"><span class="toc-number">7.1.</span> <span class="toc-text">目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%84%E6%9C%9F%E4%BA%A4%E4%BB%98%E7%89%A9"><span class="toc-number">7.2.</span> <span class="toc-text">预期交付物</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BB%BA%E8%AE%AE%E9%A1%BA%E5%BA%8F"><span class="toc-number">7.3.</span> <span class="toc-text">建议顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E6%AD%A5%E9%87%8C%E7%A8%8B%E7%A2%91%EF%BC%88%E5%BE%85%E7%BB%86%E5%8C%96%EF%BC%89"><span class="toc-number">7.4.</span> <span class="toc-text">初步里程碑（待细化）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E9%98%B6%E6%AE%B5%EF%BC%9AFPGA-%E6%9D%BF%E7%BA%A7%E9%AA%8C%E8%AF%81"><span class="toc-number">8.</span> <span class="toc-text">第四阶段：FPGA 板级验证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87-1"><span class="toc-number">8.1.</span> <span class="toc-text">目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%84%E6%9C%9F%E4%BA%A4%E4%BB%98%E7%89%A9-1"><span class="toc-number">8.2.</span> <span class="toc-text">预期交付物</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E5%9C%BA%E6%99%AF%EF%BC%88%E8%A7%84%E5%88%92%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">验证场景（规划）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%B5%84%E6%BA%90"><span class="toc-number">9.</span> <span class="toc-text">相关资源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E8%AE%B0%E5%BD%95"><span class="toc-number">10.</span> <span class="toc-text">更新记录</span></a></li></ol>
+                </div>
+            </button>
+            
+
+            
+
+            <a href="#nexmoe-content" class="backtop toc-link" aria-label="Back To Top" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+        </div>
+    </div>
+</div></div><div id="nexmoe-footer"><!--!--></div><div id="nexmoe-search-space"><div class="search-container"><div class="search-header"><div class="search-input-container"><input class="search-input" type="text" placeholder="Search" onInput="sinput();"></div><a class="search-close" onclick="sclose();">×</a></div><div class="search-body"></div></div></div><div></div></body></html>
