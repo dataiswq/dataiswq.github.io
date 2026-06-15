@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="en"><head>
+<title>IEEE 802.3 MAC 层学习笔记（阶段一） - BetterAndBetter</title>
+<meta charset="UTF-8">
+<meta name="keywords" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<meta name="description" content="基于 IEEE 802.3-2022 整理的 Ethernet MAC 层学习笔记，涵盖 Clause 1–4 分层架构、MA_DATA 服务原语、MAC 帧格式、地址过滤与 Clause 31 MAC Control（PAUSE&#x2F;PFC）流控机制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IEEE 802.3 MAC 层学习笔记（阶段一）">
+<meta property="og:url" content="https://dataiswq.github.io/2026/06/15/MacLayerReadLog/index.html">
+<meta property="og:site_name" content="BetterAndBetter">
+<meta property="og:description" content="基于 IEEE 802.3-2022 整理的 Ethernet MAC 层学习笔记，涵盖 Clause 1–4 分层架构、MA_DATA 服务原语、MAC 帧格式、地址过滤与 Clause 31 MAC Control（PAUSE&#x2F;PFC）流控机制。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://dataiswq.github.io/Picture/MacArchitecture.jpg">
+<meta property="og:image" content="https://dataiswq.github.io/Picture/%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BA%A6%E5%AE%9A%E7%AC%A6%E5%8F%B7.jpg">
+<meta property="og:image" content="https://dataiswq.github.io/Picture/FrameFormat.jpg">
+<meta property="og:image" content="https://dataiswq.github.io/Picture/MacControl.jpg">
+<meta property="og:image" content="https://dataiswq.github.io/Picture/MacCtrlFrame.jpg">
+<meta property="article:published_time" content="2026-06-14T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-14T16:00:00.000Z">
+<meta property="article:author" content="时间">
+<meta property="article:tag" content="Ethernet">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dataiswq.github.io/Picture/MacArchitecture.jpg">
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.css">
+<link rel="stylesheet" href="/lib/mdui_043tiny/mdui.css">
+
+
+<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1781533966241">
+
+<link rel="stylesheet" href="/css/style.css?v=1781533966242">
+
+
+
+
+    
+        <link rel="stylesheet" href="/custom.css?v=1781533966242">
+    
+
+
+
+<script src="/lib/mdui_043tiny/mdui.js" async></script>
+<script src="/lib/fancybox/fancybox.umd.js" async></script>
+<script src="/lib/lax.min.js" async></script>
+
+
+<script async src="/js/app.js?v=1781533966243"></script>
+
+ 
+
+
+
+<link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+<meta name="generator" content="Hexo 8.1.2"></head><body class="nexmoe mdui-drawer-body-left"><div id="nexmoe-background"><div class="nexmoe-bg" style="background-image: url(/Picture/头像.jpg)"></div><div class="mdui-appbar mdui-shadow-0"><div class="mdui-toolbar"><a class="mdui-btn mdui-btn-icon mdui-ripple" mdui-drawer="{target: &#039;#drawer&#039;, swipe: true}" title="menu"><i class="mdui-icon nexmoefont icon-menu"></i></a><div class="mdui-toolbar-spacer"></div><a class="mdui-btn mdui-btn-icon" href="/" title="时间"><img src="/Picture/头像.jpg" alt="时间"></a></div></div></div><div id="nexmoe-header"><div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="时间">
+            <img src="/Picture/头像.jpg" alt="时间" alt="时间">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>4</div>
+        <div><span>Tags</span>8</div>
+        <div><span>Categories</span>3</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+    </div>
+    
+    
+        
+        <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+
+
+
+
+    
+        
+        <div class="nexmoe-widget-wrap">
+	<div class="nexmoe-widget nexmoe-social">
+		<a
+			class="mdui-ripple"
+			href="https://dataiswq.github.io/"
+			target="_blank"
+			mdui-tooltip="{content: 'GitHub'}"
+			style="
+				color: rgb(25, 23, 23);
+				background-color: rgba(25, 23, 23, .1);
+			"
+		>
+			<i
+				class="nexmoefont icon-github"
+			></i> </a
+		>
+	</div>
+</div>
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/学习笔记/">学习笔记</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/学习计划/">学习计划</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/建立博客/">建立博客</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/Ethernet/" style="font-size: 20px;">Ethernet</a> <a href="/tags/GitHub-Pages/" style="font-size: 10px;">GitHub Pages</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/IEEE802-3/" style="font-size: 10px;">IEEE802.3</a> <a href="/tags/MAC/" style="font-size: 10px;">MAC</a> <a href="/tags/PCS/" style="font-size: 10px;">PCS</a> <a href="/tags/RTL/" style="font-size: 10px;">RTL</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">记录</a>
+    </div>
+    
+      <script>
+        var maxTagcloud = parseInt(17);
+        var tags_length = parseInt(8);
+        var tags_arr = [];
+        for(var i = 0; i < tags_length; i++){
+          tags_arr.push(i);
+        }
+        tags_arr.sort(function (l, r) {
+          return Math.random() > 0.5 ? -1 : 1;
+        });
+        tags_arr = tags_arr.slice(0, maxTagcloud < tags_length ? tags_length - maxTagcloud : 0);
+        for(var tag_i = 0; tag_i < tags_arr.length; tag_i++){
+          document.getElementById("randomtagcloud").children[tags_arr[tag_i]].style.display = 'none';
+        }
+      </script>
+    
+  </div>
+
+    
+        
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/">2026</a><span class="archive-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/06/15/MacLayerReadLog/">IEEE 802.3 MAC 层学习笔记（阶段一）</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/12/EthernetLearnPlan/">1G/10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/BlogSet/">Hexo 静态博客搭建指南——从本地到 GitHub Pages</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+   
+    <div class="nexmoe-copyright">
+        &copy; 2026 时间
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer --></div><div id="nexmoe-content"><div class="nexmoe-primary"><div class="nexmoe-post">
+  <article>
+    
+        <div class="nexmoe-post-cover absolute" style="padding-top: NaN%;"> 
+            <img src="/Picture/叶片.jpg" alt="IEEE 802.3 MAC 层学习笔记（阶段一）" loading="lazy">
+            <h1>IEEE 802.3 MAC 层学习笔记（阶段一）</h1>
+        </div>
+    
+    
+    <div class="nexmoe-post-meta">
+    <div class="nexmoe-rainbow">
+        <a class="nexmoefont icon-calendar-fill">2026年06月15日</a>
+        
+            <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+        
+        
+    </div>
+    
+    
+    
+    
+    
+</div>
+
+    <h1 id="MAC-层学习记录"><a href="#MAC-层学习记录" class="headerlink" title="MAC 层学习记录"></a>MAC 层学习记录</h1><blockquote>
+<p><strong>参考标准</strong>：IEEE Std 802.3-2022（<code>IEEE 802.3-2022</code>）<br><strong>学习阶段</strong>：阶段一 — MAC 公共基础（6&#x2F;13 – 6&#x2F;15）</p>
+</blockquote>
+<p>本文记录 Ethernet <strong>MAC 子层</strong> 公共规范的学习过程，重点覆盖 <strong>802.3-2022 Clause 1–4</strong> 与 <strong>Clause 31（MAC Control）</strong>。MAC 负责帧封装&#x2F;解封装、地址识别、FCS 校验及可选流控；与 PHY 的分界为 <strong>MII 家族接口</strong>（GMII &#x2F; XGMII 等）。后续阶段将依次学习 GMII、1000BASE-X PCS 与 10GBASE-R 等速率相关条款。</p>
+<p><strong>阅读建议</strong>：先通读 Clause 1 的分层图建立全局视角，再按 Clause 2 → 3 → 4 顺序理解「服务接口 → 帧格式 → 操作模型」，最后补充 Clause 31 流控扩展。</p>
+<hr>
+<h2 id="802-3-2022-与旧版条款对照"><a href="#802-3-2022-与旧版条款对照" class="headerlink" title="802.3-2022 与旧版条款对照"></a>802.3-2022 与旧版条款对照</h2><p>802.3-2022 对基础 MAC 章节做了重组；阅读其他资料时若见到旧编号，可按下表对照：</p>
+<table>
+<thead>
+<tr>
+<th>主题</th>
+<th><strong>802.3-2022</strong></th>
+<th>802.3-2018（及更早）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>概述与架构</td>
+<td><strong>Clause 1</strong></td>
+<td>Clause 1</td>
+</tr>
+<tr>
+<td>定义与缩写</td>
+<td><strong>Clause 1.4 &#x2F; 1.5</strong></td>
+<td>Clause 3</td>
+</tr>
+<tr>
+<td>MAC 对上服务接口</td>
+<td><strong>Clause 2</strong></td>
+<td>Clause 4.2</td>
+</tr>
+<tr>
+<td>MAC 帧格式</td>
+<td><strong>Clause 3</strong></td>
+<td>Clause 4.3–4.8</td>
+</tr>
+<tr>
+<td>MAC 操作 &#x2F; CSMA&#x2F;CD</td>
+<td><strong>Clause 4</strong></td>
+<td>Clause 4（其余）</td>
+</tr>
+<tr>
+<td>GMII</td>
+<td><strong>Clause 35</strong></td>
+<td>Clause 35（2018 亦同；部分旧资料写作 Clause 34）</td>
+</tr>
+<tr>
+<td>1000BASE-X PCS</td>
+<td><strong>Clause 36</strong></td>
+<td>Clause 36</td>
+</tr>
+<tr>
+<td>1000BASE-X 自协商</td>
+<td><strong>Clause 37</strong></td>
+<td>Clause 37</td>
+</tr>
+<tr>
+<td>XGMII</td>
+<td><strong>Clause 46</strong></td>
+<td>Clause 46</td>
+</tr>
+<tr>
+<td>10GBASE-X PCS（8B&#x2F;10B，4 lane）</td>
+<td><strong>Clause 48</strong></td>
+<td>Clause 48</td>
+</tr>
+<tr>
+<td>10GBASE-R PCS（64B&#x2F;66B）</td>
+<td><strong>Clause 49</strong></td>
+<td>Clause 49（部分计划文档误写为 Clause 48）</td>
+</tr>
+<tr>
+<td>10G 背板自协商</td>
+<td><strong>Clause 73</strong></td>
+<td>Clause 73</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>MSAP（MAC 服务访问点）在 IEEE 802 参考模型中对应 <strong>802.3-2022 Clause 2</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><table>
+<thead>
+<tr>
+<th>条款</th>
+<th>主题</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Clause 1</td>
+<td>概述、分层架构、定义与缩写</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>Clause 2</td>
+<td>MAC 服务规范（MA_DATA）</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>Clause 3</td>
+<td>MAC 帧与分组格式</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>Clause 4</td>
+<td>MAC 操作方法 &#x2F; 地址过滤 &#x2F; 接收状态</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>Clause 31</td>
+<td>MAC Control &#x2F; PAUSE &#x2F; PFC（略读）</td>
+<td>已整理</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="802-3-Clause-1：Introduction（概述）"><a href="#802-3-Clause-1：Introduction（概述）" class="headerlink" title="802.3 Clause 1：Introduction（概述）"></a>802.3 Clause 1：Introduction（概述）</h2><p>本章说明 Ethernet 范围、分层架构、符号与状态机约定，并在 <strong>§1.4 &#x2F; §1.5</strong> 集中给出定义与缩写。</p>
+<h3 id="分层架构"><a href="#分层架构" class="headerlink" title="分层架构"></a>分层架构</h3><p>整体可分为 <strong>传输介质无关层（MAC）</strong> 与 <strong>传输介质相关层（PHY）</strong>，分别对应 <strong>数据链路层</strong> 与 <strong>物理层</strong>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────┐</span><br><span class="line">│  MAC          组帧 / 解帧 / FCS / 流控   │  ← MSAP：Clause 2</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  RS（可选）   10G 速率匹配 / 复用拆分    │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PCS          8B/10B 或 64B/66B 编码     │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PMA          SerDes 串并转换 / 时钟恢复  │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PMD          信号适配至具体物理介质      │</span><br><span class="line">└─────────────────────────────────────────┘</span><br><span class="line">         ▲ MII 家族（GMII / XGMII / …）</span><br><span class="line">         └── MAC 与 PHY 的标准分界</span><br><span class="line">         ▲ PSAP：Clause 6（PLS 服务，MAC 与 PHY 之间）</span><br></pre></td></tr></table></figure>
+
+<p>架构总图见下图（本阶段重点为 MAC 与 MII 接口一侧）：</p>
+<p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/MacArchitecture.jpg" alt="802.3 分层架构" data-caption="802.3 分层架构" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th>子层 &#x2F; 接口</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>MAC</strong></td>
+<td>帧封装与解析、地址过滤、FCS、流控等</td>
+</tr>
+<tr>
+<td><strong>MII 家族</strong></td>
+<td>MAC 与 PHY 之间的并行数据接口（GMII、XGMII、XLGMII 等）</td>
+</tr>
+<tr>
+<td><strong>PCS</strong></td>
+<td>物理编码：编解码、对齐、链路状态</td>
+</tr>
+<tr>
+<td><strong>PMA</strong></td>
+<td>串并&#x2F;并串转换、时钟恢复</td>
+</tr>
+<tr>
+<td><strong>PMD</strong></td>
+<td>将电信号&#x2F;光信号适配到具体介质（光纤、铜缆、背板等）</td>
+</tr>
+<tr>
+<td><strong>MDI</strong></td>
+<td>介质相关接口，连接至实际传输介质</td>
+</tr>
+</tbody></table>
+<h3 id="双工模式（§1-1-2）"><a href="#双工模式（§1-1-2）" class="headerlink" title="双工模式（§1.1.2）"></a>双工模式（§1.1.2）</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>介质使用</th>
+<th>冲突处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>半双工</strong></td>
+<td>多方共享同一介质</td>
+<td>载波侦听 + 冲突检测（CSMA&#x2F;CD，Clause 4）</td>
+</tr>
+<tr>
+<td><strong>全双工</strong></td>
+<td>TX&#x2F;RX 独立通道，不共享介质</td>
+<td>无冲突，不使用 CSMA&#x2F;CD</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>常见 1G&#x2F;10G 光纤链路均为全双工；半双工多见于历史百兆共享介质场景。</p>
+</blockquote>
+<h3 id="状态机阅读约定（§1-2-1）"><a href="#状态机阅读约定（§1-2-1）" class="headerlink" title="状态机阅读约定（§1.2.1）"></a>状态机阅读约定（§1.2.1）</h3><p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BA%A6%E5%AE%9A%E7%AC%A6%E5%8F%B7.jpg" alt="状态机符号约定" data-caption="状态机符号约定" loading="lazy"></p>
+<p>阅读状态机时注意：</p>
+<ul>
+<li>同一信号可能被多个状态机引用；</li>
+<li>具有全局性质的转换（如从任意状态进入 IDLE 或 RESET）常用 <strong>空心箭头</strong> 标示；</li>
+<li>具体转换条件以标准中的状态转移表为准。</li>
+</ul>
+<h3 id="定义与缩写（§1-4-§1-5）"><a href="#定义与缩写（§1-4-§1-5）" class="headerlink" title="定义与缩写（§1.4 &#x2F; §1.5）"></a>定义与缩写（§1.4 &#x2F; §1.5）</h3><p>802.3-2022 将术语与缩写集中在 Clause 1，而非独立成章。阶段一需掌握的核心条目：</p>
+<table>
+<thead>
+<tr>
+<th>缩写</th>
+<th>全称 &#x2F; 含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>MAC</strong></td>
+<td>Media Access Control，介质访问控制子层</td>
+</tr>
+<tr>
+<td><strong>PHY</strong></td>
+<td>Physical layer device，物理层设备</td>
+</tr>
+<tr>
+<td><strong>PCS</strong></td>
+<td>Physical Coding Sublayer，物理编码子层</td>
+</tr>
+<tr>
+<td><strong>PMA</strong></td>
+<td>Physical Medium Attachment，物理介质附加子层</td>
+</tr>
+<tr>
+<td><strong>PMD</strong></td>
+<td>Physical Medium Dependent，物理介质相关子层</td>
+</tr>
+<tr>
+<td><strong>GMII</strong></td>
+<td>Gigabit Media Independent Interface（1G MAC–PHY 接口，Clause 35）</td>
+</tr>
+<tr>
+<td><strong>XGMII</strong></td>
+<td>10 Gigabit Media Independent Interface（10G MAC–PHY 接口，Clause 46）</td>
+</tr>
+<tr>
+<td><strong>FCS</strong></td>
+<td>Frame Check Sequence，帧校验序列（CRC-32）</td>
+</tr>
+<tr>
+<td><strong>SFD</strong></td>
+<td>Start Frame Delimiter，帧起始定界符</td>
+</tr>
+<tr>
+<td><strong>DA &#x2F; SA</strong></td>
+<td>Destination &#x2F; Source Address，目的 &#x2F; 源 MAC 地址</td>
+</tr>
+<tr>
+<td><strong>MSDU</strong></td>
+<td>MAC Service Data Unit，MAC 服务数据单元</td>
+</tr>
+<tr>
+<td><strong>LLC</strong></td>
+<td>Logical Link Control（上层 MAC Client，非 MAC 本体）</td>
+</tr>
+<tr>
+<td><strong>PAUSE</strong></td>
+<td>MAC Control 流控帧（Clause 31）</td>
+</tr>
+<tr>
+<td><strong>OUI</strong></td>
+<td>Organizationally Unique Identifier，厂商标识（地址高 24 bit）</td>
+</tr>
+<tr>
+<td><strong>I&#x2F;G</strong></td>
+<td>Individual&#x2F;Group bit，地址首字节最低位</td>
+</tr>
+<tr>
+<td><strong>U&#x2F;L</strong></td>
+<td>Universal&#x2F;Local bit，地址首字节次低位</td>
+</tr>
+<tr>
+<td><strong>Unicast</strong></td>
+<td>单播：I&#x2F;G bit &#x3D; 0</td>
+</tr>
+<tr>
+<td><strong>Multicast</strong></td>
+<td>组播：I&#x2F;G bit &#x3D; 1，且非全 1</td>
+</tr>
+<tr>
+<td><strong>Broadcast</strong></td>
+<td>广播：48 bit 地址全为 1（<code>FF:FF:FF:FF:FF:FF</code>）</td>
+</tr>
+<tr>
+<td><strong>MA_DATA</strong></td>
+<td>MAC 子层与 MAC Client 之间的服务原语族（Clause 2）</td>
+</tr>
+<tr>
+<td><strong>PLS</strong></td>
+<td>Physical Layer Signaling，物理层信令（Clause 6–7）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>阶段一目标</strong>：术语表 ≥ 20 条；上表随学习进度继续扩充。</p>
+</blockquote>
+<h3 id="章节索引用法"><a href="#章节索引用法" class="headerlink" title="章节索引用法"></a>章节索引用法</h3><p>后续学习其他速率或 Ethernet 扩展时，可在 Clause 1 按关键词检索，快速定位对应章节。</p>
+<hr>
+<h2 id="802-3-Clause-2：MAC-service-specification（MAC-服务规范）"><a href="#802-3-Clause-2：MAC-service-specification（MAC-服务规范）" class="headerlink" title="802.3 Clause 2：MAC service specification（MAC 服务规范）"></a>802.3 Clause 2：MAC service specification（MAC 服务规范）</h2><p>MAC 通过 <strong>服务原语（service primitives）</strong> 与上层 <strong>MAC Client</strong>（如 LLC、桥接逻辑）交互。在 IEEE 802 参考模型中，该接口称为 <strong>MSAP</strong>。</p>
+<h3 id="服务原语概览"><a href="#服务原语概览" class="headerlink" title="服务原语概览"></a>服务原语概览</h3><table>
+<thead>
+<tr>
+<th>原语</th>
+<th>方向</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>MA_DATA.request</code></td>
+<td>MAC Client → MAC</td>
+<td>请求发送一帧</td>
+</tr>
+<tr>
+<td><code>MA_DATA.indication</code></td>
+<td>MAC → MAC Client</td>
+<td>指示收到一帧（或接收结果）</td>
+</tr>
+</tbody></table>
+<h3 id="MA-DATA-request（发送，§2-3-1）"><a href="#MA-DATA-request（发送，§2-3-1）" class="headerlink" title="MA_DATA.request（发送，§2.3.1）"></a><code>MA_DATA.request</code>（发送，§2.3.1）</h3><p>MAC Client 向 MAC 提交：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>destinationAddress</code></td>
+<td>目的 MAC 地址（DA）</td>
+</tr>
+<tr>
+<td><code>sourceAddress</code></td>
+<td>源 MAC 地址（SA）</td>
+</tr>
+<tr>
+<td><code>macServiceDataUnit</code></td>
+<td>待发送 MSDU</td>
+</tr>
+<tr>
+<td><code>frameStatus</code>（发送完成后）</td>
+<td>发送结果；若 FCS 由 MAC 计算，则通过状态反映是否出错</td>
+</tr>
+</tbody></table>
+<p>MAC 负责 <strong>组帧</strong> 并经 MII&#x2F;PLS 向下发送。FCS 由 MAC 本地计算并附加（见 Clause 3.2.9、Clause 4.2.3.1）。</p>
+<h3 id="MA-DATA-indication（接收，§2-3-2）"><a href="#MA-DATA-indication（接收，§2-3-2）" class="headerlink" title="MA_DATA.indication（接收，§2.3.2）"></a><code>MA_DATA.indication</code>（接收，§2.3.2）</h3><p>MAC 向 MAC Client 递交：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>destinationAddress</code></td>
+<td>解析得到的 DA</td>
+</tr>
+<tr>
+<td><code>sourceAddress</code></td>
+<td>解析得到的 SA</td>
+</tr>
+<tr>
+<td><code>macServiceDataUnit</code></td>
+<td>帧载荷（MSDU）</td>
+</tr>
+<tr>
+<td><code>receptionStatus</code></td>
+<td>接收状态（如 <code>statusOK</code>、<code>frameTooLong</code>、<code>frameCheckError</code> 等）</td>
+</tr>
+</tbody></table>
+<p>本质是将 <strong>已解析的报文内容</strong> 与 <strong>本地 MAC 运行结果</strong> 一并上送。具体状态枚举见 Clause 4.3.2 与 Clause 4.2.4。</p>
+<h3 id="与-Clause-3-的映射"><a href="#与-Clause-3-的映射" class="headerlink" title="与 Clause 3 的映射"></a>与 Clause 3 的映射</h3><p>Clause 3.1.2 描述 MSDU 与 MAC 帧字段（DA、SA、Length&#x2F;Type、Data、Pad、FCS）之间的映射关系。发送时 MAC 将 <code>macServiceDataUnit</code> 嵌入帧体；接收时从已校验帧中提取 MSDU 上送。</p>
+<h3 id="数据通路示意"><a href="#数据通路示意" class="headerlink" title="数据通路示意"></a>数据通路示意</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">发送（TX）：</span><br><span class="line">  MAC Client ──MA_DATA.request──► MAC ──组帧+FCS──► MII/PLS ──► PHY</span><br><span class="line">                (DA, SA, MSDU)</span><br><span class="line"></span><br><span class="line">接收（RX）：</span><br><span class="line">  PHY ──► MII/PLS ──► MAC ──解帧+FCS校验+地址过滤──► MAC Client</span><br><span class="line">                              └──MA_DATA.indication──►</span><br><span class="line">                                 (DA, SA, MSDU, receptionStatus)</span><br></pre></td></tr></table></figure>
+
+<p>若系统启用 MAC Control，数据帧与控制帧在 MAC Control 层复用后再进入 MAC（见 Clause 31）。</p>
+<hr>
+<h2 id="802-3-Clause-3：MAC-frame-and-packet-specifications（MAC-帧格式）"><a href="#802-3-Clause-3：MAC-frame-and-packet-specifications（MAC-帧格式）" class="headerlink" title="802.3 Clause 3：MAC frame and packet specifications（MAC 帧格式）"></a>802.3 Clause 3：MAC frame and packet specifications（MAC 帧格式）</h2><h3 id="帧结构总览（§3-1-1）"><a href="#帧结构总览（§3-1-1）" class="headerlink" title="帧结构总览（§3.1.1）"></a>帧结构总览（§3.1.1）</h3><p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/FrameFormat.jpg" alt="以太网 MAC 帧格式" data-caption="以太网 MAC 帧格式" loading="lazy"></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">┌──────────┬─────┬────────┬────────┬─────────────┬─────┬─────┬──────────┐</span><br><span class="line">│ Preamble │ SFD │   DA   │   SA   │ Length/Type │Data │ Pad │   FCS    │</span><br><span class="line">│  7 byte  │1 B  │ 6 byte │ 6 byte │   2 byte    │0–N  │0–N  │ 4 byte   │</span><br><span class="line">└──────────┴─────┴────────┴────────┴─────────────┴─────┴─────┴──────────┘</span><br><span class="line">        ↑ 不在 MA_DATA.indication 的 MSDU 内（由 PHY/MII 处理或 MAC 内部生成）</span><br></pre></td></tr></table></figure>
+
+<h3 id="各字段说明（§3-2）"><a href="#各字段说明（§3-2）" class="headerlink" title="各字段说明（§3.2）"></a>各字段说明（§3.2）</h3><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>标准节</th>
+<th>长度</th>
+<th>取值 &#x2F; 规则</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Preamble</strong></td>
+<td>§3.2.1</td>
+<td>7 byte</td>
+<td>每字节 <code>0x55</code></td>
+<td>时钟同步；直流平衡；提示接收端即将收到帧</td>
+</tr>
+<tr>
+<td><strong>SFD</strong></td>
+<td>§3.2.2</td>
+<td>1 byte</td>
+<td><code>0xD5</code></td>
+<td>标识帧起始</td>
+</tr>
+<tr>
+<td><strong>DA</strong></td>
+<td>§3.2.4</td>
+<td>6 byte</td>
+<td>见下表</td>
+<td>目的 MAC 地址</td>
+</tr>
+<tr>
+<td><strong>SA</strong></td>
+<td>§3.2.5</td>
+<td>6 byte</td>
+<td>须为单播地址</td>
+<td>源 MAC 地址</td>
+</tr>
+<tr>
+<td><strong>Length&#x2F;Type</strong></td>
+<td>§3.2.6</td>
+<td>2 byte</td>
+<td>≤ <code>0x0600</code>（1536）为 <strong>Length</strong>；≥ <code>0x0601</code> 为 <strong>Type</strong>（Ethertype）</td>
+<td>区分 LLC 长度与上层协议类型</td>
+</tr>
+</tbody></table>
+<p><strong>Length &#x2F; Type 判别示例</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段值</th>
+<th>含义</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>0x005E</code>（94）</td>
+<td>Length &#x3D; 94 byte</td>
+<td>LLC&#x2F;SNAP 封装，载荷较短</td>
+</tr>
+<tr>
+<td><code>0x0800</code></td>
+<td>Type &#x3D; IPv4</td>
+<td>直接承载 IP 报文</td>
+</tr>
+<tr>
+<td><code>0x0806</code></td>
+<td>Type &#x3D; ARP</td>
+<td>地址解析协议</td>
+</tr>
+<tr>
+<td><code>0x8100</code></td>
+<td>Type &#x3D; VLAN Tag（802.1Q）</td>
+<td>带 Tag 的帧（Q-tag）</td>
+</tr>
+<tr>
+<td><code>0x8808</code></td>
+<td>Type &#x3D; MAC Control</td>
+<td>PAUSE &#x2F; PFC 控制帧</td>
+</tr>
+<tr>
+<td><strong>MAC Client Data</strong></td>
+<td>§3.2.7</td>
+<td>0–1500 byte（典型）</td>
+</tr>
+<tr>
+<td><strong>Pad</strong></td>
+<td>§3.2.8</td>
+<td>0–N byte</td>
+</tr>
+<tr>
+<td><strong>FCS</strong></td>
+<td>§3.2.9</td>
+<td>4 byte</td>
+</tr>
+<tr>
+<td><strong>Extension</strong></td>
+<td>§3.2.10</td>
+<td>半双工专用</td>
+</tr>
+</tbody></table>
+<h3 id="MAC-地址格式（§3-2-3）"><a href="#MAC-地址格式（§3-2-3）" class="headerlink" title="MAC 地址格式（§3.2.3）"></a>MAC 地址格式（§3.2.3）</h3><p>48 bit 地址写作 <code>xx:xx:xx:xx:xx:xx</code>。首字节最低位为 <strong>I&#x2F;G bit</strong>，次低位为 <strong>U&#x2F;L bit</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>I&#x2F;G bit（bit 0）</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>单播（Unicast）</strong></td>
+<td>0</td>
+<td><code>00:11:22:33:44:55</code></td>
+</tr>
+<tr>
+<td><strong>组播（Multicast）</strong></td>
+<td>1，且非全 1</td>
+<td><code>01:00:5E:xx:xx:xx</code></td>
+</tr>
+<tr>
+<td><strong>广播（Broadcast）</strong></td>
+<td>全 6 字节均为 <code>0xFF</code></td>
+<td><code>FF:FF:FF:FF:FF:FF</code></td>
+</tr>
+</tbody></table>
+<h3 id="帧长约束（§3-1-1、Clause-4-4-2）"><a href="#帧长约束（§3-1-1、Clause-4-4-2）" class="headerlink" title="帧长约束（§3.1.1、Clause 4.4.2）"></a>帧长约束（§3.1.1、Clause 4.4.2）</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>minFrameSize</code>（MAC 帧主体）</td>
+<td><strong>64 byte</strong></td>
+<td>从 DA 到 FCS；不含 Preamble&#x2F;SFD</td>
+</tr>
+<tr>
+<td>最大帧长（基本 MAC）</td>
+<td><strong>1518 byte</strong></td>
+<td>含 DA～FCS；不含 Preamble&#x2F;SFD</td>
+</tr>
+<tr>
+<td>最小载荷（Data + Pad）</td>
+<td><strong>46 byte</strong></td>
+<td>Length ≤ 1500 时，不足则由 Pad 填充</td>
+</tr>
+</tbody></table>
+<h3 id="FCS（CRC-32，§3-2-9）"><a href="#FCS（CRC-32，§3-2-9）" class="headerlink" title="FCS（CRC-32，§3.2.9）"></a>FCS（CRC-32，§3.2.9）</h3><ul>
+<li><strong>生成多项式</strong>：<code>0x04C11DB7</code>（反射实现常写作 <code>0xEDB88320</code>）</li>
+<li><strong>初始值</strong>：<code>0xFFFFFFFF</code></li>
+<li><strong>计算范围</strong>：DA 至 Data&#x2F;Pad 末尾（<strong>不含 FCS</strong>）</li>
+<li><strong>算法</strong>：CRC 余数取反后附加在帧尾</li>
+</ul>
+<h3 id="比特发送顺序（§3-3）"><a href="#比特发送顺序（§3-3）" class="headerlink" title="比特发送顺序（§3.3）"></a>比特发送顺序（§3.3）</h3><ul>
+<li><strong>字节顺序</strong>：先传帧中靠前的字节；</li>
+<li><strong>字节内比特顺序</strong>：<strong>低位（LSB）先发</strong>。</li>
+</ul>
+<p>因此 <code>0x55</code>（<code>01010101</code>）在链路上按 bit 发出为 <code>1,0,1,0,1,0,1,0</code>，按 MSB 重排则呈现为 <code>0xAA</code>。阅读抓包或示波器波形时需与 MII 接口定义区分。</p>
+<h3 id="无效-MAC-帧（§3-4）"><a href="#无效-MAC-帧（§3-4）" class="headerlink" title="无效 MAC 帧（§3.4）"></a>无效 MAC 帧（§3.4）</h3><p>以下情况可判为无效帧（具体处理见 Clause 4.2.4）：</p>
+<ul>
+<li>FCS 校验失败；</li>
+<li>帧长小于 <code>minFrameSize</code>；</li>
+<li>Length 字段值与实际情况不符（<code>inRangeLengthError</code> 等）。</li>
+</ul>
+<h3 id="TX-RX-职责摘要"><a href="#TX-RX-职责摘要" class="headerlink" title="TX &#x2F; RX 职责摘要"></a>TX &#x2F; RX 职责摘要</h3><table>
+<thead>
+<tr>
+<th>方向</th>
+<th>MAC 动作（Clause 4  procedural model）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>TX</strong></td>
+<td>插入 Preamble&#x2F;SFD，封装 DA&#x2F;SA&#x2F;Length&#x2F;Type&#x2F;Data&#x2F;Pad，计算 FCS（§4.2.3.1）</td>
+</tr>
+<tr>
+<td><strong>RX</strong></td>
+<td>同步帧界，地址识别，FCS 校验，解帧上送 <code>MA_DATA.indication</code>（§4.2.4.1）</td>
+</tr>
+</tbody></table>
+<h3 id="实例：最小-IPv4-以太网帧"><a href="#实例：最小-IPv4-以太网帧" class="headerlink" title="实例：最小 IPv4 以太网帧"></a>实例：最小 IPv4 以太网帧</h3><p>假设发送 28 byte 的 ARP 报文（Ethertype <code>0x0806</code>），各字段如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Preamble : 55 55 55 55 55 55 55</span><br><span class="line">SFD      : D5</span><br><span class="line">DA       : FF FF FF FF FF FF          （广播 ARP 请求）</span><br><span class="line">SA       : 00 11 22 33 44 55</span><br><span class="line">L/T      : 08 06                     （Type = ARP）</span><br><span class="line">Data     : 28 byte ARP 载荷</span><br><span class="line">Pad      : 18 byte 0x00               （28 + 18 = 46 byte，满足最小载荷）</span><br><span class="line">FCS      : 4 byte CRC-32</span><br><span class="line">─────────────────────────────────────</span><br><span class="line">MAC 主体 : 6+6+2+28+18+4 = 64 byte   （minFrameSize）</span><br></pre></td></tr></table></figure>
+
+<p>若 MSDU 已达 46 byte 及以上，则 <strong>无需 Pad</strong>；FCS 始终由 MAC 计算并附加。</p>
+<hr>
+<h2 id="802-3-Clause-4：Media-Access-Control（介质访问控制）"><a href="#802-3-Clause-4：Media-Access-Control（介质访问控制）" class="headerlink" title="802.3 Clause 4：Media Access Control（介质访问控制）"></a>802.3 Clause 4：Media Access Control（介质访问控制）</h2><p>本章给出 MAC 功能的精确规范，包括 CSMA&#x2F;CD、发送&#x2F;接收过程模型及与相邻层接口。阶段一重点掌握 <strong>全双工操作模型</strong>、<strong>地址识别</strong> 与 <strong>接收状态枚举</strong>；CSMA&#x2F;CD 半双工细节留待后续按需深入。</p>
+<h3 id="操作模型总览（§4-2）"><a href="#操作模型总览（§4-2）" class="headerlink" title="操作模型总览（§4.2）"></a>操作模型总览（§4.2）</h3><p>MAC 功能可抽象为 <strong>发送实体（Transmit）</strong> 与 <strong>接收实体（Receive）</strong> 两个过程模型，分别响应 <code>MA_DATA.request</code> 与产生 <code>MA_DATA.indication</code>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">                  ┌─────────────────────────────────┐</span><br><span class="line">MA_DATA.request   │           MAC 发送实体           │</span><br><span class="line">────────────────► │  封装 → 插入 Preamble/SFD → FCS  │──► MII TX</span><br><span class="line">                  └─────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">                  ┌─────────────────────────────────┐</span><br><span class="line">MII RX            │           MAC 接收实体           │</span><br><span class="line">────────────────► │  同步 → 校验 → 地址过滤 → 解帧   │──► MA_DATA.indication</span><br><span class="line">                  └─────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="发送过程（§4-2-3）"><a href="#发送过程（§4-2-3）" class="headerlink" title="发送过程（§4.2.3）"></a>发送过程（§4.2.3）</h3><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>动作</th>
+<th>标准节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>接收 <code>MA_DATA.request</code>，获取 DA、SA、MSDU</td>
+<td>§4.2.3.1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>确定 Length&#x2F;Type 字段（LLC 长度或 Ethertype）</td>
+<td>§3.2.6</td>
+</tr>
+<tr>
+<td>3</td>
+<td>若 Data + Pad 不足 46 byte，插入 Pad</td>
+<td>§3.2.8</td>
+</tr>
+<tr>
+<td>4</td>
+<td>计算 FCS（CRC-32，覆盖 DA 至 Pad 末尾）</td>
+<td>§3.2.9、§4.2.3.1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>在帧前插入 Preamble（7×<code>0x55</code>）与 SFD（<code>0xD5</code>）</td>
+<td>§3.2.1–3.2.2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>经 MII&#x2F;PLS 逐字节&#x2F;逐比特送出</td>
+<td>§4.2.3.2</td>
+</tr>
+</tbody></table>
+<p><strong>全双工发送（§4.2.3.2.6）</strong>：TX 与 RX 使用独立通道，<strong>无载波侦听、无冲突检测、无退避</strong>。MAC 在收到 <code>MA_DATA.request</code> 后即可连续发送，不受对端接收能力以外的介质约束（流控由 Clause 31 PAUSE&#x2F;PFC 另行处理）。</p>
+<p><strong>半双工发送（§4.2.3.2，略读）</strong>：共享介质上须执行 CSMA&#x2F;CD——先侦听信道空闲，发送中持续检测冲突，冲突则中止并按二进制指数退避后重传。现代 1G&#x2F;10G 链路几乎均为全双工，RTL 实现时可优先实现全双工路径。</p>
+<h3 id="接收过程（§4-2-4）"><a href="#接收过程（§4-2-4）" class="headerlink" title="接收过程（§4.2.4）"></a>接收过程（§4.2.4）</h3><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>动作</th>
+<th>标准节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>检测 Preamble&#x2F;SFD，完成帧同步</td>
+<td>§4.2.4.1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>接收 DA～FCS，实时或整帧校验 FCS</td>
+<td>§4.2.4.1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>检查帧长是否满足 <code>minFrameSize</code> &#x2F; 最大帧长</td>
+<td>§4.4.2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>地址识别：判定本帧是否应递交 MAC Client</td>
+<td>§4.2.4.1.1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>组装 <code>MA_DATA.indication</code>，携带 <code>receptionStatus</code></td>
+<td>§4.2.4.1、§4.3.2.2</td>
+</tr>
+</tbody></table>
+<h3 id="地址识别与过滤（§4-2-4-1-1）"><a href="#地址识别与过滤（§4-2-4-1-1）" class="headerlink" title="地址识别与过滤（§4.2.4.1.1）"></a>地址识别与过滤（§4.2.4.1.1）</h3><p>MAC 根据 DA 与本地配置决定 <strong>是否将帧上送 MAC Client</strong>（<code>frameNotFiltered</code>）或 <strong>丢弃</strong>（<code>frameFiltered</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>DA 类型</th>
+<th>默认行为</th>
+<th>可配置项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>单播</strong></td>
+<td>仅当 DA &#x3D; 本端口 MAC 地址时接收</td>
+<td><strong>Promiscuous mode</strong>：接收所有单播</td>
+</tr>
+<tr>
+<td><strong>组播</strong></td>
+<td>仅当 DA 命中组播过滤表时接收</td>
+<td><strong>All multicast</strong>：接收所有组播</td>
+</tr>
+<tr>
+<td><strong>广播</strong></td>
+<td>默认接收（<code>FF:FF:FF:FF:FF:FF</code>）</td>
+<td>部分实现允许关闭</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>实现提示</strong>：组播过滤表通常由软件配置 HASH 寄存器或精确匹配表；Promiscuous 模式常用于抓包或桥接场景。被过滤的帧 <strong>不产生</strong> <code>MA_DATA.indication</code>，但可计入 <code>frameFiltered</code> 类统计（Clause 5）。</p>
+</blockquote>
+<h3 id="接收状态-receptionStatus（§4-3-2-2）"><a href="#接收状态-receptionStatus（§4-3-2-2）" class="headerlink" title="接收状态 receptionStatus（§4.3.2.2）"></a>接收状态 <code>receptionStatus</code>（§4.3.2.2）</h3><p><code>MA_DATA.indication</code> 中的 <code>receptionStatus</code> 告知 MAC Client 接收结果。常见枚举：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+<th>典型触发条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>statusOK</code></td>
+<td>接收成功</td>
+<td>FCS 正确、帧长合法、地址未过滤</td>
+</tr>
+<tr>
+<td><code>frameTooLong</code></td>
+<td>帧过长</td>
+<td>超过 <code>maxFrameSize</code>（基本 MAC 为 1518 byte，不含 Preamble&#x2F;SFD）</td>
+</tr>
+<tr>
+<td><code>frameCheckError</code></td>
+<td>FCS 错误</td>
+<td>CRC 校验失败</td>
+</tr>
+<tr>
+<td><code>alignmentError</code></td>
+<td>对齐错误</td>
+<td>帧长非整数字节（半双工场景更常见）</td>
+</tr>
+<tr>
+<td><code>inRangeLengthError</code></td>
+<td>Length 字段矛盾</td>
+<td>Length ≤ 1500 但 Data 实际长度与 Length 不符</td>
+</tr>
+<tr>
+<td><code>outOfRangeLengthError</code></td>
+<td>Length 越界</td>
+<td>Length 字段值非法（如 &gt; 1500 却被解析为 Length 而非 Type）</td>
+</tr>
+</tbody></table>
+<p>MAC Client 应依据 <code>receptionStatus</code> 决定是否处理 MSDU；仅 <code>statusOK</code> 时载荷可信。错误帧通常只更新 MIB 计数器（Clause 5），不上送上层。</p>
+<h3 id="MAC-关键参数（§4-4-2）"><a href="#MAC-关键参数（§4-4-2）" class="headerlink" title="MAC 关键参数（§4.4.2）"></a>MAC 关键参数（§4.4.2）</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>典型值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>minFrameSize</code></td>
+<td>64 byte</td>
+<td>DA 至 FCS 的最小长度</td>
+</tr>
+<tr>
+<td><code>maxFrameSize</code></td>
+<td>1518 byte</td>
+<td>基本 MAC 最大帧长（不含 Preamble&#x2F;SFD）</td>
+</tr>
+<tr>
+<td><code>slotTime</code></td>
+<td>512 bit time（64 byte @ 10 Mb&#x2F;s 基准）</td>
+<td>半双工冲突检测窗口；全双工不使用</td>
+</tr>
+<tr>
+<td><code>interFrameGap</code>（IFG）</td>
+<td>96 bit time（12 byte @ 10 Mb&#x2F;s 基准）</td>
+<td>帧间最小间隔；各速率按 bit time 缩放</td>
+</tr>
+<tr>
+<td><code>maxFrameDataSize</code></td>
+<td>1500 byte</td>
+<td>MSDU 最大载荷（不含 Pad）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Jumbo Frame</strong>：超出上述基本参数的大帧（如 9000 byte）不属于 IEEE 802.3 基本 MAC 强制范围，需双方协商支持；统计与缓冲设计须单独考虑。</p>
+</blockquote>
+<h3 id="CSMA-CD-概要（§4-1-2，略读存档）"><a href="#CSMA-CD-概要（§4-1-2，略读存档）" class="headerlink" title="CSMA&#x2F;CD 概要（§4.1.2，略读存档）"></a>CSMA&#x2F;CD 概要（§4.1.2，略读存档）</h3><p>半双工共享介质的核心算法 <strong>CSMA&#x2F;CD</strong>（Carrier Sense Multiple Access with Collision Detection）：</p>
+<ol>
+<li><strong>载波侦听（CS）</strong>：发送前监听介质，空闲才发送；</li>
+<li><strong>多路访问（MA）</strong>：多方共享同一介质；</li>
+<li><strong>冲突检测（CD）</strong>：发送过程中若检测到冲突，立即中止并发送 <strong>Jam</strong> 信号；</li>
+<li><strong>二进制指数退避</strong>：冲突后随机等待 $2^n$ 个 slotTime（$n$ 为重传次数，有上限）再重试。</li>
+</ol>
+<p>全双工点对点链路不使用 CSMA&#x2F;CD；学习 PCS&#x2F;MII 时默认假设全双工即可。</p>
+<h3 id="Clause-4-与相邻条款关系"><a href="#Clause-4-与相邻条款关系" class="headerlink" title="Clause 4 与相邻条款关系"></a>Clause 4 与相邻条款关系</h3><table>
+<thead>
+<tr>
+<th>内容</th>
+<th>标准节</th>
+<th>本阶段掌握</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>发送 &#x2F; 接收过程模型</td>
+<td>§4.2.3、§4.2.4</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>全双工操作</td>
+<td>§4.2.3.2.6</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>地址识别与过滤</td>
+<td>§4.2.4.1.1</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td><code>receptionStatus</code> 枚举</td>
+<td>§4.3.2.2</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>MAC 参数</td>
+<td>§4.4.2</td>
+<td>已整理</td>
+</tr>
+<tr>
+<td>CSMA&#x2F;CD 与半双工退避</td>
+<td>§4.1.2、§4.2.3.2</td>
+<td>略读存档</td>
+</tr>
+<tr>
+<td>MAC Control &#x2F; PAUSE &#x2F; PFC</td>
+<td>Clause 31</td>
+<td>见下文</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="802-3-Clause-31：MAC-Control（媒体访问控制子层扩展）"><a href="#802-3-Clause-31：MAC-Control（媒体访问控制子层扩展）" class="headerlink" title="802.3 Clause 31：MAC Control（媒体访问控制子层扩展）"></a>802.3 Clause 31：MAC Control（媒体访问控制子层扩展）</h2><blockquote>
+<p><strong>相关附录</strong>：Annex 31A（Opcode 分配）、Annex 31B（PAUSE）、Annex 31D（PFC）<br>在 IEEE 802 参考模型中，MAC Control 提供可选的 <strong>MCSAP</strong>（MAC Control Service Access Point）。</p>
+</blockquote>
+<p>MAC Control 位于 <strong>MAC Client</strong> 与 <strong>MAC</strong> 之间，负责对普通数据帧与控制帧进行 <strong>复用（TX）</strong> 与 <strong>解复用（RX）</strong>：</p>
+<p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/MacControl.jpg" alt="MAC Control 层位置与数据流" data-caption="MAC Control 层位置与数据流" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th>方向</th>
+<th>MAC Control 动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>TX</strong></td>
+<td>将 MAC Client 的数据帧与本地产生的 MAC Control 帧合并，统一交给下层 MAC 发送</td>
+</tr>
+<tr>
+<td><strong>RX</strong></td>
+<td>根据 Length&#x2F;Type 与 Opcode 判别帧类型：数据帧上送 MAC Client；控制帧在本地处理，通常 <strong>不</strong> 递交上层，而是触发暂停发送等内部信号</td>
+</tr>
+</tbody></table>
+<p>部分控制帧仅在 MAC Control 子层内部”消化”，不向 MAC Client 上送，只产生对应的流控或状态信号。</p>
+<h3 id="MAC-Control-帧格式（§31-4-1）"><a href="#MAC-Control-帧格式（§31-4-1）" class="headerlink" title="MAC Control 帧格式（§31.4.1）"></a>MAC Control 帧格式（§31.4.1）</h3><p>MAC Control 帧是特殊的以太网 MAC 帧，<strong>Length&#x2F;Type &#x3D; <code>0x8808</code></strong>（MAC Control 类型）：</p>
+<p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/MacCtrlFrame.jpg" alt="MAC Control 帧结构" data-caption="MAC Control 帧结构" loading="lazy"></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">┌────────────────┬────────────────┬──────────┬─────────────┬──────────────────────┬─────┐</span><br><span class="line">│       DA       │       SA       │ L/T=8808 │ Opcode (2B) │ MAC Control Params   │ FCS │</span><br><span class="line">│    6 byte      │    6 byte      │  2 byte  │             │ （因 Opcode 而异）    │ 4 B │</span><br><span class="line">└────────────────┴────────────────┴──────────┴─────────────┴──────────────────────┴─────┘</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>DA</strong></td>
+<td>流控类控制帧使用保留组播地址 <strong><code>01:80:C2:00:00:01</code></strong>（Slow Protocols 组播地址，§31.4.1.1）</td>
+</tr>
+<tr>
+<td><strong>SA</strong></td>
+<td>发送方 MAC 地址</td>
+</tr>
+<tr>
+<td><strong>Length&#x2F;Type</strong></td>
+<td>固定为 <strong><code>0x8808</code></strong>，标识 MAC Control 帧</td>
+</tr>
+<tr>
+<td><strong>Opcode</strong></td>
+<td>2 字节，指示控制帧类型（Annex 31A）</td>
+</tr>
+<tr>
+<td><strong>Parameters</strong></td>
+<td>随 Opcode 变化的操作参数（§31.4.1.5）</td>
+</tr>
+</tbody></table>
+<h3 id="常见-Opcode"><a href="#常见-Opcode" class="headerlink" title="常见 Opcode"></a>常见 Opcode</h3><table>
+<thead>
+<tr>
+<th>Opcode</th>
+<th>名称</th>
+<th>附录</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>0x0001</code></td>
+<td><strong>PAUSE</strong></td>
+<td>Annex 31B</td>
+<td>全链路流控：暂停对端发送普通数据帧</td>
+</tr>
+<tr>
+<td><code>0x0101</code></td>
+<td><strong>PFC</strong>（Priority-based Flow Control）</td>
+<td>Annex 31D</td>
+<td>按优先级流控：可单独暂停指定 CoS&#x2F;优先级队列</td>
+</tr>
+</tbody></table>
+<h3 id="PAUSE-帧（Opcode-0x0001）"><a href="#PAUSE-帧（Opcode-0x0001）" class="headerlink" title="PAUSE 帧（Opcode 0x0001）"></a>PAUSE 帧（Opcode <code>0x0001</code>）</h3><p>参数区仅含 <strong>2 字节 <code>pause_time</code></strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>长度</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pause_time</code></td>
+<td>2 byte</td>
+<td>暂停时长，单位为 <strong>512 bit 时间</strong>（bit time quanta）</td>
+</tr>
+</tbody></table>
+<ul>
+<li>作用对象：使 <strong>接收方</strong> 暂停其 <strong>TX 方向</strong> 上的 <strong>普通 MAC 数据帧</strong> 发送；</li>
+<li><strong>不阻塞</strong> MAC Control 帧本身（控制帧仍可收发）；</li>
+<li>效果范围：<strong>整条链路</strong> 上的数据发送（无优先级区分）。</li>
+</ul>
+<p><strong>暂停时间换算</strong>：<code>pause_time</code> 单位为 <strong>512 bit time</strong>。以 1 Gb&#x2F;s 为例，1 bit time &#x3D; 1 ns，故：</p>
+<p>$$\text{暂停时长 (μs)} &#x3D; \text{pause_time} \times 512 \times 10^{-3}$$</p>
+<p>例如 <code>pause_time = 0xFFFF</code>（65535）时，暂停约 $65535 \times 512 \text{ ns} \approx 33.6 \text{ ms}$。RTL 实现宜在此基础上加上链路传播延迟裕量（<code>aPAUSELinkDelayAllowance</code>）。</p>
+<h3 id="PFC-帧（Opcode-0x0101）"><a href="#PFC-帧（Opcode-0x0101）" class="headerlink" title="PFC 帧（Opcode 0x0101）"></a>PFC 帧（Opcode <code>0x0101</code>）</h3><p>参数区结构：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>长度</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>priority_enable_vector</code></td>
+<td>2 byte</td>
+<td>位图，指示哪些优先级（0–7）参与本次流控</td>
+</tr>
+<tr>
+<td><code>pause_time[0..7]</code></td>
+<td>8 × 2 byte</td>
+<td>每个优先级独立的暂停时间，单位同为 <strong>512 bit 时间</strong></td>
+</tr>
+</tbody></table>
+<ul>
+<li>与 PAUSE 相同：只暂停对端 TX 方向的 <strong>数据帧</strong>，<strong>不阻塞</strong> MAC Control 帧；</li>
+<li>差异：可按 <strong>优先级</strong> 选择性暂停，未置位的优先级不受影响。</li>
+</ul>
+<h3 id="PAUSE-与-PFC-对比"><a href="#PAUSE-与-PFC-对比" class="headerlink" title="PAUSE 与 PFC 对比"></a>PAUSE 与 PFC 对比</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>PAUSE</th>
+<th>PFC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>阻塞粒度</td>
+<td>全链路数据帧</td>
+<td>按优先级（0–7）</td>
+</tr>
+<tr>
+<td>参数</td>
+<td>1 个 <code>pause_time</code></td>
+<td>1 个 enable 位图 + 8 个 <code>pause_time</code></td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>简单全双工流控</td>
+<td>数据中心多队列 &#x2F; DCB</td>
+</tr>
+</tbody></table>
+<h3 id="定时器更新规则（实现要点）"><a href="#定时器更新规则（实现要点）" class="headerlink" title="定时器更新规则（实现要点）"></a>定时器更新规则（实现要点）</h3><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pause_time = 0</code></td>
+<td><strong>解除</strong> 暂停（取消当前阻塞）</td>
+</tr>
+<tr>
+<td>阻塞尚未结束，又收到新 PAUSE&#x2F;PFC</td>
+<td>以 <strong>最新帧</strong> 的参数 <strong>覆盖</strong> 旧值，计时器 <strong>重新开始</strong></td>
+</tr>
+<tr>
+<td>链路传播延迟</td>
+<td>接收方宜将暂停时间 <strong>适当加长</strong>（<code>pause_time</code> 加上链路延迟裕量），避免对端在旧暂停到期后仍发来数据而造成拥塞</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>标准在 Annex 31B §31B.3.7 中给出了 PAUSE 定时与链路延迟（<code>aPAUSELinkDelayAllowance</code>）的相关要求；RTL 实现时需预留该裕量。</p>
+</blockquote>
+<h3 id="本阶段掌握程度"><a href="#本阶段掌握程度" class="headerlink" title="本阶段掌握程度"></a>本阶段掌握程度</h3><ul>
+<li>[Y] 理解 MAC Control 在协议栈中的位置及 TX&#x2F;RX 复用关系</li>
+<li>[Y] 能识别 MAC Control 帧（<code>0x8808</code>）及 PAUSE&#x2F;PFC 帧字段</li>
+<li>[Y] 理解 <code>pause_time</code> 单位与定时器覆盖规则</li>
+<li><input disabled="" type="checkbox"> PAUSE&#x2F;PFC 发送与接收状态机细节（Annex 31B &#x2F; 31D，RTL 阶段再深入）</li>
+</ul>
+<hr>
+<h2 id="阶段一知识串联"><a href="#阶段一知识串联" class="headerlink" title="阶段一知识串联"></a>阶段一知识串联</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">flowchart TB</span><br><span class="line">    subgraph Upper[&quot;上层&quot;]</span><br><span class="line">        LLC[&quot;MAC Client / LLC&quot;]</span><br><span class="line">    end</span><br><span class="line">    subgraph MC[&quot;可选&quot;]</span><br><span class="line">        MCtrl[&quot;MAC Control\n(PAUSE / PFC)&quot;]</span><br><span class="line">    end</span><br><span class="line">    subgraph MAC[&quot;MAC 子层&quot;]</span><br><span class="line">        TX[&quot;发送实体\n组帧 + FCS&quot;]</span><br><span class="line">        RX[&quot;接收实体\n校验 + 过滤&quot;]</span><br><span class="line">    end</span><br><span class="line">    subgraph Lower[&quot;下层&quot;]</span><br><span class="line">        MII[&quot;MII / GMII / XGMII&quot;]</span><br><span class="line">        PHY[&quot;PHY / PCS / PMA / PMD&quot;]</span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    LLC --&gt;|&quot;MA_DATA.request&quot;| MCtrl</span><br><span class="line">    MCtrl --&gt; TX</span><br><span class="line">    TX --&gt; MII</span><br><span class="line">    MII --&gt; PHY</span><br><span class="line">    PHY --&gt; MII</span><br><span class="line">    MII --&gt; RX</span><br><span class="line">    RX --&gt;|&quot;MA_DATA.indication&quot;| MCtrl</span><br><span class="line">    MCtrl --&gt; LLC</span><br><span class="line">    MCtrl -.-&gt;|&quot;0x8808 控制帧&quot;| TX</span><br><span class="line">    RX -.-&gt;|&quot;本地流控信号&quot;| MCtrl</span><br></pre></td></tr></table></figure>
+
+<p><strong>一句话回顾</strong>：MAC Client 通过 <code>MA_DATA</code> 原语与 MAC 交互；MAC 按 Clause 3 格式组帧&#x2F;解帧，按 Clause 4 执行发送&#x2F;接收与地址过滤；拥塞时可经 MAC Control 发送 PAUSE&#x2F;PFC 帧（Clause 31）临时抑制对端数据发送。</p>
+<hr>
+<h2 id="本阶段相关条款速查（802-3-2022）"><a href="#本阶段相关条款速查（802-3-2022）" class="headerlink" title="本阶段相关条款速查（802.3-2022）"></a>本阶段相关条款速查（802.3-2022）</h2><table>
+<thead>
+<tr>
+<th>条款</th>
+<th>内容</th>
+<th>计划日期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Clause 1</td>
+<td>概述、定义、缩写</td>
+<td>6&#x2F;13</td>
+</tr>
+<tr>
+<td>Clause 2</td>
+<td>MAC 服务规范</td>
+<td>6&#x2F;13 – 6&#x2F;14</td>
+</tr>
+<tr>
+<td>Clause 3</td>
+<td>MAC 帧格式</td>
+<td>6&#x2F;13 – 6&#x2F;14</td>
+</tr>
+<tr>
+<td>Clause 4</td>
+<td>MAC 操作（帧长、地址过滤等）</td>
+<td>6&#x2F;14 – 6&#x2F;15</td>
+</tr>
+<tr>
+<td>Clause 31</td>
+<td>MAC Control（略读）</td>
+<td>6&#x2F;14</td>
+</tr>
+<tr>
+<td>Clause 35</td>
+<td>GMII</td>
+<td>6&#x2F;16 – 6&#x2F;17</td>
+</tr>
+<tr>
+<td>Clause 36</td>
+<td>1000BASE-X PCS</td>
+<td>6&#x2F;18 – 6&#x2F;21</td>
+</tr>
+<tr>
+<td>Clause 37</td>
+<td>1000BASE-X 自协商</td>
+<td>6&#x2F;22</td>
+</tr>
+<tr>
+<td>Clause 46</td>
+<td>XGMII</td>
+<td>6&#x2F;23 – 6&#x2F;24</td>
+</tr>
+<tr>
+<td>Clause 49</td>
+<td>10GBASE-R PCS（64B&#x2F;66B）</td>
+<td>6&#x2F;25、6&#x2F;27 – 6&#x2F;28</td>
+</tr>
+<tr>
+<td>Clause 48</td>
+<td>10GBASE-X PCS（对照）</td>
+<td>6&#x2F;29</td>
+</tr>
+<tr>
+<td>Clause 73</td>
+<td>10G 背板自协商</td>
+<td>6&#x2F;29</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="阶段一检查点（自测）"><a href="#阶段一检查点（自测）" class="headerlink" title="阶段一检查点（自测）"></a>阶段一检查点（自测）</h2><ul>
+<li>[Y] 能独立画出 MAC 帧各字段及字节宽度（Clause 3）</li>
+<li>[Y] 能区分 Length 字段与 Type（Ethertype）字段（§3.2.6）</li>
+<li>[Y] 能说明单播 &#x2F; 组播 &#x2F; 广播地址的判别规则（§3.2.3）</li>
+<li>[Y] 能解释 <code>MA_DATA.request</code> 与 <code>MA_DATA.indication</code> 的参数含义（Clause 2）</li>
+<li>[Y] 能解释 MAC 在协议栈中的位置及与 PCS 的边界（GMII &#x2F; XGMII）</li>
+<li>[Y] 能描述一帧从 MAC Client 到 MII 输出的基本步骤</li>
+<li>[Y] 能说明全双工与半双工 MAC 操作差异（Clause 4）</li>
+<li>[Y] 能列举常见 <code>receptionStatus</code> 及触发条件（§4.3.2.2）</li>
+<li>[Y] 能识别 MAC Control 帧并解释 PAUSE 与 PFC 的区别（Clause 31）</li>
+</ul>
+<hr>
+<h2 id="待深入-疑问"><a href="#待深入-疑问" class="headerlink" title="待深入 &#x2F; 疑问"></a>待深入 &#x2F; 疑问</h2><table>
+<thead>
+<tr>
+<th>条目</th>
+<th>标准位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CSMA&#x2F;CD 状态机与退避细节</td>
+<td>Clause 4 §4.2.3.2</td>
+<td>半双工 RTL 时再深入</td>
+</tr>
+<tr>
+<td>Extension &#x2F; Carrier Extend</td>
+<td>§3.2.10、§4.2.3.4</td>
+<td>半双工 slot time 与最小帧关系</td>
+</tr>
+<tr>
+<td>jumbo frame</td>
+<td>超出基本 MAC 参数</td>
+<td>非本轮重点</td>
+</tr>
+<tr>
+<td>MAC Control 状态机细节</td>
+<td>Annex 31B &#x2F; 31D</td>
+<td>RTL 阶段再深入</td>
+</tr>
+<tr>
+<td>MIB 统计计数器</td>
+<td>Clause 5</td>
+<td>与 <code>receptionStatus</code>、错误帧统计关联</td>
+</tr>
+<tr>
+<td>GMII 信号时序</td>
+<td>Clause 35</td>
+<td>阶段二（6&#x2F;16 起）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="更新记录"><a href="#更新记录" class="headerlink" title="更新记录"></a>更新记录</h2><table>
+<thead>
+<tr>
+<th>日期</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-06-13</td>
+<td>初稿：Clause 1 – 4 阅读笔记</td>
+</tr>
+<tr>
+<td>2026-06-15</td>
+<td>修正技术错误；统一图片路径；补充术语表与检查点</td>
+</tr>
+<tr>
+<td>2026-06-15</td>
+<td><strong>对齐 IEEE 802.3-2022</strong>：条款重组（Cl.2 服务 &#x2F; Cl.3 帧格式 &#x2F; Cl.1.4 定义）；更新服务原语命名；补充与 2018 对照表及后续章节编号</td>
+</tr>
+<tr>
+<td>2026-06-15</td>
+<td>完善 Clause 31（MAC Control &#x2F; PAUSE &#x2F; PFC）笔记</td>
+</tr>
+<tr>
+<td>2026-06-15</td>
+<td><strong>完善 Clause 4</strong>：补充 TX&#x2F;RX 过程、地址过滤、<code>receptionStatus</code>、MAC 参数与 CSMA&#x2F;CD 概要；增加帧实例、Length&#x2F;Type 示例、知识串联图与自测项</td>
+</tr>
+</tbody></table>
+
+    
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>时间<br>
+        <strong>Link：</strong><a href="https://dataiswq.github.io/2026/06/15/MacLayerReadLog/" title="https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;06&#x2F;15&#x2F;MacLayerReadLog&#x2F;" target="_blank" rel="noopener">https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;06&#x2F;15&#x2F;MacLayerReadLog&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+   
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/Ethernet/" rel="tag">Ethernet</a>
+    
+</div>
+  
+  
+    <script async src="/js/copy-codeblock.js?v=1781533966197"></script>
+  
+
+  
+</div></div><div class="nexmoe-post-right">    <div class="nexmoe-fixed">
+        <div class="nexmoe-tool">
+
+            
+
+            
+            
+            <button class="mdui-fab catalog" style="overflow:unset;">
+                <i class="nexmoefont icon-i-catalog"></i>
+                <div class="nexmoe-toc">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MAC-%E5%B1%82%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">MAC 层学习记录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#802-3-2022-%E4%B8%8E%E6%97%A7%E7%89%88%E6%9D%A1%E6%AC%BE%E5%AF%B9%E7%85%A7"><span class="toc-number">1.1.</span> <span class="toc-text">802.3-2022 与旧版条款对照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95"><span class="toc-number">1.2.</span> <span class="toc-text">目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#802-3-Clause-1%EF%BC%9AIntroduction%EF%BC%88%E6%A6%82%E8%BF%B0%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">802.3 Clause 1：Introduction（概述）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">1.3.1.</span> <span class="toc-text">分层架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E5%B7%A5%E6%A8%A1%E5%BC%8F%EF%BC%88%C2%A71-1-2%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">双工模式（§1.1.2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E6%9C%BA%E9%98%85%E8%AF%BB%E7%BA%A6%E5%AE%9A%EF%BC%88%C2%A71-2-1%EF%BC%89"><span class="toc-number">1.3.3.</span> <span class="toc-text">状态机阅读约定（§1.2.1）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E4%B8%8E%E7%BC%A9%E5%86%99%EF%BC%88%C2%A71-4-%C2%A71-5%EF%BC%89"><span class="toc-number">1.3.4.</span> <span class="toc-text">定义与缩写（§1.4 &#x2F; §1.5）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AB%A0%E8%8A%82%E7%B4%A2%E5%BC%95%E7%94%A8%E6%B3%95"><span class="toc-number">1.3.5.</span> <span class="toc-text">章节索引用法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#802-3-Clause-2%EF%BC%9AMAC-service-specification%EF%BC%88MAC-%E6%9C%8D%E5%8A%A1%E8%A7%84%E8%8C%83%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">802.3 Clause 2：MAC service specification（MAC 服务规范）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%8E%9F%E8%AF%AD%E6%A6%82%E8%A7%88"><span class="toc-number">1.4.1.</span> <span class="toc-text">服务原语概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MA-DATA-request%EF%BC%88%E5%8F%91%E9%80%81%EF%BC%8C%C2%A72-3-1%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">MA_DATA.request（发送，§2.3.1）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MA-DATA-indication%EF%BC%88%E6%8E%A5%E6%94%B6%EF%BC%8C%C2%A72-3-2%EF%BC%89"><span class="toc-number">1.4.3.</span> <span class="toc-text">MA_DATA.indication（接收，§2.3.2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8E-Clause-3-%E7%9A%84%E6%98%A0%E5%B0%84"><span class="toc-number">1.4.4.</span> <span class="toc-text">与 Clause 3 的映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF%E7%A4%BA%E6%84%8F"><span class="toc-number">1.4.5.</span> <span class="toc-text">数据通路示意</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#802-3-Clause-3%EF%BC%9AMAC-frame-and-packet-specifications%EF%BC%88MAC-%E5%B8%A7%E6%A0%BC%E5%BC%8F%EF%BC%89"><span class="toc-number">1.5.</span> <span class="toc-text">802.3 Clause 3：MAC frame and packet specifications（MAC 帧格式）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%A7%E7%BB%93%E6%9E%84%E6%80%BB%E8%A7%88%EF%BC%88%C2%A73-1-1%EF%BC%89"><span class="toc-number">1.5.1.</span> <span class="toc-text">帧结构总览（§3.1.1）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E5%AD%97%E6%AE%B5%E8%AF%B4%E6%98%8E%EF%BC%88%C2%A73-2%EF%BC%89"><span class="toc-number">1.5.2.</span> <span class="toc-text">各字段说明（§3.2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MAC-%E5%9C%B0%E5%9D%80%E6%A0%BC%E5%BC%8F%EF%BC%88%C2%A73-2-3%EF%BC%89"><span class="toc-number">1.5.3.</span> <span class="toc-text">MAC 地址格式（§3.2.3）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%A7%E9%95%BF%E7%BA%A6%E6%9D%9F%EF%BC%88%C2%A73-1-1%E3%80%81Clause-4-4-2%EF%BC%89"><span class="toc-number">1.5.4.</span> <span class="toc-text">帧长约束（§3.1.1、Clause 4.4.2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FCS%EF%BC%88CRC-32%EF%BC%8C%C2%A73-2-9%EF%BC%89"><span class="toc-number">1.5.5.</span> <span class="toc-text">FCS（CRC-32，§3.2.9）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AF%94%E7%89%B9%E5%8F%91%E9%80%81%E9%A1%BA%E5%BA%8F%EF%BC%88%C2%A73-3%EF%BC%89"><span class="toc-number">1.5.6.</span> <span class="toc-text">比特发送顺序（§3.3）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A0%E6%95%88-MAC-%E5%B8%A7%EF%BC%88%C2%A73-4%EF%BC%89"><span class="toc-number">1.5.7.</span> <span class="toc-text">无效 MAC 帧（§3.4）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TX-RX-%E8%81%8C%E8%B4%A3%E6%91%98%E8%A6%81"><span class="toc-number">1.5.8.</span> <span class="toc-text">TX &#x2F; RX 职责摘要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E4%BE%8B%EF%BC%9A%E6%9C%80%E5%B0%8F-IPv4-%E4%BB%A5%E5%A4%AA%E7%BD%91%E5%B8%A7"><span class="toc-number">1.5.9.</span> <span class="toc-text">实例：最小 IPv4 以太网帧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#802-3-Clause-4%EF%BC%9AMedia-Access-Control%EF%BC%88%E4%BB%8B%E8%B4%A8%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6%EF%BC%89"><span class="toc-number">1.6.</span> <span class="toc-text">802.3 Clause 4：Media Access Control（介质访问控制）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E6%A8%A1%E5%9E%8B%E6%80%BB%E8%A7%88%EF%BC%88%C2%A74-2%EF%BC%89"><span class="toc-number">1.6.1.</span> <span class="toc-text">操作模型总览（§4.2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81%E8%BF%87%E7%A8%8B%EF%BC%88%C2%A74-2-3%EF%BC%89"><span class="toc-number">1.6.2.</span> <span class="toc-text">发送过程（§4.2.3）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E8%BF%87%E7%A8%8B%EF%BC%88%C2%A74-2-4%EF%BC%89"><span class="toc-number">1.6.3.</span> <span class="toc-text">接收过程（§4.2.4）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E8%AF%86%E5%88%AB%E4%B8%8E%E8%BF%87%E6%BB%A4%EF%BC%88%C2%A74-2-4-1-1%EF%BC%89"><span class="toc-number">1.6.4.</span> <span class="toc-text">地址识别与过滤（§4.2.4.1.1）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E7%8A%B6%E6%80%81-receptionStatus%EF%BC%88%C2%A74-3-2-2%EF%BC%89"><span class="toc-number">1.6.5.</span> <span class="toc-text">接收状态 receptionStatus（§4.3.2.2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MAC-%E5%85%B3%E9%94%AE%E5%8F%82%E6%95%B0%EF%BC%88%C2%A74-4-2%EF%BC%89"><span class="toc-number">1.6.6.</span> <span class="toc-text">MAC 关键参数（§4.4.2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CSMA-CD-%E6%A6%82%E8%A6%81%EF%BC%88%C2%A74-1-2%EF%BC%8C%E7%95%A5%E8%AF%BB%E5%AD%98%E6%A1%A3%EF%BC%89"><span class="toc-number">1.6.7.</span> <span class="toc-text">CSMA&#x2F;CD 概要（§4.1.2，略读存档）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clause-4-%E4%B8%8E%E7%9B%B8%E9%82%BB%E6%9D%A1%E6%AC%BE%E5%85%B3%E7%B3%BB"><span class="toc-number">1.6.8.</span> <span class="toc-text">Clause 4 与相邻条款关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#802-3-Clause-31%EF%BC%9AMAC-Control%EF%BC%88%E5%AA%92%E4%BD%93%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6%E5%AD%90%E5%B1%82%E6%89%A9%E5%B1%95%EF%BC%89"><span class="toc-number">1.7.</span> <span class="toc-text">802.3 Clause 31：MAC Control（媒体访问控制子层扩展）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MAC-Control-%E5%B8%A7%E6%A0%BC%E5%BC%8F%EF%BC%88%C2%A731-4-1%EF%BC%89"><span class="toc-number">1.7.1.</span> <span class="toc-text">MAC Control 帧格式（§31.4.1）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81-Opcode"><span class="toc-number">1.7.2.</span> <span class="toc-text">常见 Opcode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PAUSE-%E5%B8%A7%EF%BC%88Opcode-0x0001%EF%BC%89"><span class="toc-number">1.7.3.</span> <span class="toc-text">PAUSE 帧（Opcode 0x0001）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PFC-%E5%B8%A7%EF%BC%88Opcode-0x0101%EF%BC%89"><span class="toc-number">1.7.4.</span> <span class="toc-text">PFC 帧（Opcode 0x0101）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PAUSE-%E4%B8%8E-PFC-%E5%AF%B9%E6%AF%94"><span class="toc-number">1.7.5.</span> <span class="toc-text">PAUSE 与 PFC 对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E6%97%B6%E5%99%A8%E6%9B%B4%E6%96%B0%E8%A7%84%E5%88%99%EF%BC%88%E5%AE%9E%E7%8E%B0%E8%A6%81%E7%82%B9%EF%BC%89"><span class="toc-number">1.7.6.</span> <span class="toc-text">定时器更新规则（实现要点）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E9%98%B6%E6%AE%B5%E6%8E%8C%E6%8F%A1%E7%A8%8B%E5%BA%A6"><span class="toc-number">1.7.7.</span> <span class="toc-text">本阶段掌握程度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80%E7%9F%A5%E8%AF%86%E4%B8%B2%E8%81%94"><span class="toc-number">1.8.</span> <span class="toc-text">阶段一知识串联</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E9%98%B6%E6%AE%B5%E7%9B%B8%E5%85%B3%E6%9D%A1%E6%AC%BE%E9%80%9F%E6%9F%A5%EF%BC%88802-3-2022%EF%BC%89"><span class="toc-number">1.9.</span> <span class="toc-text">本阶段相关条款速查（802.3-2022）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B6%E6%AE%B5%E4%B8%80%E6%A3%80%E6%9F%A5%E7%82%B9%EF%BC%88%E8%87%AA%E6%B5%8B%EF%BC%89"><span class="toc-number">1.10.</span> <span class="toc-text">阶段一检查点（自测）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%85%E6%B7%B1%E5%85%A5-%E7%96%91%E9%97%AE"><span class="toc-number">1.11.</span> <span class="toc-text">待深入 &#x2F; 疑问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E8%AE%B0%E5%BD%95"><span class="toc-number">1.12.</span> <span class="toc-text">更新记录</span></a></li></ol></li></ol>
+                </div>
+            </button>
+            
+
+            
+
+            <a href="#nexmoe-content" class="backtop toc-link" aria-label="Back To Top" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+        </div>
+    </div>
+</div></div><div id="nexmoe-footer"><!--!--></div><div id="nexmoe-search-space"><div class="search-container"><div class="search-header"><div class="search-input-container"><input class="search-input" type="text" placeholder="Search" onInput="sinput();"></div><a class="search-close" onclick="sclose();">×</a></div><div class="search-body"></div></div></div><div></div></body></html>
