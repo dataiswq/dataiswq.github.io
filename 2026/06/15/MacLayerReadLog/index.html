@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://dataiswq.github.io/Picture/MacArchitecture.jpg">
 <meta property="og:image" content="https://dataiswq.github.io/Picture/%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BA%A6%E5%AE%9A%E7%AC%A6%E5%8F%B7.jpg">
-<meta property="og:image" content="https://dataiswq.github.io/Picture/FrameFormat.jpg">
+<meta property="og:image" content="https://dataiswq.github.io/Picture/FrameFormt.jpg">
 <meta property="og:image" content="https://dataiswq.github.io/Picture/MacControl.jpg">
 <meta property="og:image" content="https://dataiswq.github.io/Picture/MacCtrlFrame.jpg">
 <meta property="article:published_time" content="2026-06-14T16:00:00.000Z">
@@ -29,15 +29,15 @@
 <link rel="stylesheet" href="/lib/mdui_043tiny/mdui.css">
 
 
-<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1781533966241">
+<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1781534339853">
 
-<link rel="stylesheet" href="/css/style.css?v=1781533966242">
+<link rel="stylesheet" href="/css/style.css?v=1781534339853">
 
 
 
 
     
-        <link rel="stylesheet" href="/custom.css?v=1781533966242">
+        <link rel="stylesheet" href="/custom.css?v=1781534339853">
     
 
 
@@ -47,7 +47,7 @@
 <script src="/lib/lax.min.js" async></script>
 
 
-<script async src="/js/app.js?v=1781533966243"></script>
+<script async src="/js/app.js?v=1781534339854"></script>
 
  
 
@@ -617,7 +617,7 @@
 
 <p>若系统启用 MAC Control，数据帧与控制帧在 MAC Control 层复用后再进入 MAC（见 Clause 31）。</p>
 <hr>
-<h2 id="802-3-Clause-3：MAC-frame-and-packet-specifications（MAC-帧格式）"><a href="#802-3-Clause-3：MAC-frame-and-packet-specifications（MAC-帧格式）" class="headerlink" title="802.3 Clause 3：MAC frame and packet specifications（MAC 帧格式）"></a>802.3 Clause 3：MAC frame and packet specifications（MAC 帧格式）</h2><h3 id="帧结构总览（§3-1-1）"><a href="#帧结构总览（§3-1-1）" class="headerlink" title="帧结构总览（§3.1.1）"></a>帧结构总览（§3.1.1）</h3><p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/FrameFormat.jpg" alt="以太网 MAC 帧格式" data-caption="以太网 MAC 帧格式" loading="lazy"></p>
+<h2 id="802-3-Clause-3：MAC-frame-and-packet-specifications（MAC-帧格式）"><a href="#802-3-Clause-3：MAC-frame-and-packet-specifications（MAC-帧格式）" class="headerlink" title="802.3 Clause 3：MAC frame and packet specifications（MAC 帧格式）"></a>802.3 Clause 3：MAC frame and packet specifications（MAC 帧格式）</h2><h3 id="帧结构总览（§3-1-1）"><a href="#帧结构总览（§3-1-1）" class="headerlink" title="帧结构总览（§3.1.1）"></a>帧结构总览（§3.1.1）</h3><p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/FrameFormt.jpg" alt="以太网 MAC 帧格式" data-caption="以太网 MAC 帧格式" loading="lazy"> </p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">┌──────────┬─────┬────────┬────────┬─────────────┬─────┬─────┬──────────┐</span><br><span class="line">│ Preamble │ SFD │   DA   │   SA   │ Length/Type │Data │ Pad │   FCS    │</span><br><span class="line">│  7 byte  │1 B  │ 6 byte │ 6 byte │   2 byte    │0–N  │0–N  │ 4 byte   │</span><br><span class="line">└──────────┴─────┴────────┴────────┴─────────────┴─────┴─────┴──────────┘</span><br><span class="line">        ↑ 不在 MA_DATA.indication 的 MSDU 内（由 PHY/MII 处理或 MAC 内部生成）</span><br></pre></td></tr></table></figure>
 
 <h3 id="各字段说明（§3-2）"><a href="#各字段说明（§3-2）" class="headerlink" title="各字段说明（§3.2）"></a>各字段说明（§3.2）</h3><table>
@@ -1403,7 +1403,7 @@
 </div>
   
   
-    <script async src="/js/copy-codeblock.js?v=1781533966197"></script>
+    <script async src="/js/copy-codeblock.js?v=1781534339814"></script>
   
 
   
