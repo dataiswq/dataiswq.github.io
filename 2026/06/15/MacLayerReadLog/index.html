@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="BetterAndBetter">
 <meta property="og:description" content="基于 IEEE 802.3-2022 整理的 Ethernet MAC 层学习笔记，涵盖 Clause 1–4 分层架构、MA_DATA 服务原语、MAC 帧格式、地址过滤与 Clause 31 MAC Control（PAUSE&#x2F;PFC）流控机制。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://dataiswq.github.io/Picture/MacArchitecture.jpg">
+<meta property="og:image" content="https://dataiswq.github.io/Picture/MacArtucture.jpg">
 <meta property="og:image" content="https://dataiswq.github.io/Picture/%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BA%A6%E5%AE%9A%E7%AC%A6%E5%8F%B7.jpg">
 <meta property="og:image" content="https://dataiswq.github.io/Picture/FrameFormt.jpg">
 <meta property="og:image" content="https://dataiswq.github.io/Picture/MacControl.jpg">
@@ -23,21 +23,21 @@
 <meta property="article:author" content="时间">
 <meta property="article:tag" content="Ethernet">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://dataiswq.github.io/Picture/MacArchitecture.jpg">
+<meta name="twitter:image" content="https://dataiswq.github.io/Picture/MacArtucture.jpg">
 
 <link rel="stylesheet" href="/lib/fancybox/fancybox.css">
 <link rel="stylesheet" href="/lib/mdui_043tiny/mdui.css">
 
 
-<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1781534339853">
+<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1781534699096">
 
-<link rel="stylesheet" href="/css/style.css?v=1781534339853">
+<link rel="stylesheet" href="/css/style.css?v=1781534699096">
 
 
 
 
     
-        <link rel="stylesheet" href="/custom.css?v=1781534339853">
+        <link rel="stylesheet" href="/custom.css?v=1781534699096">
     
 
 
@@ -47,7 +47,7 @@
 <script src="/lib/lax.min.js" async></script>
 
 
-<script async src="/js/app.js?v=1781534339854"></script>
+<script async src="/js/app.js?v=1781534699097"></script>
 
  
 
@@ -380,7 +380,7 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────┐</span><br><span class="line">│  MAC          组帧 / 解帧 / FCS / 流控   │  ← MSAP：Clause 2</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  RS（可选）   10G 速率匹配 / 复用拆分    │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PCS          8B/10B 或 64B/66B 编码     │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PMA          SerDes 串并转换 / 时钟恢复  │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  PMD          信号适配至具体物理介质      │</span><br><span class="line">└─────────────────────────────────────────┘</span><br><span class="line">         ▲ MII 家族（GMII / XGMII / …）</span><br><span class="line">         └── MAC 与 PHY 的标准分界</span><br><span class="line">         ▲ PSAP：Clause 6（PLS 服务，MAC 与 PHY 之间）</span><br></pre></td></tr></table></figure>
 
 <p>架构总图见下图（本阶段重点为 MAC 与 MII 接口一侧）：</p>
-<p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/MacArchitecture.jpg" alt="802.3 分层架构" data-caption="802.3 分层架构" loading="lazy"></p>
+<p><img onerror="imgOnError(this);" data-fancybox="gallery" src="/Picture/MacArtucture.jpg" alt="802.3 分层架构" data-caption="802.3 分层架构" loading="lazy"> </p>
 <table>
 <thead>
 <tr>
@@ -1403,7 +1403,7 @@
 </div>
   
   
-    <script async src="/js/copy-codeblock.js?v=1781534339814"></script>
+    <script async src="/js/copy-codeblock.js?v=1781534699084"></script>
   
 
   
