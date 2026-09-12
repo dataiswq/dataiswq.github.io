@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en"><head>
+<title>千兆以太网 GMII 与 1000BASE-X——从 MAC 原语到线路码组 - BetterAndBetter</title>
+<meta charset="UTF-8">
+<meta name="keywords" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<meta name="description" content="从分层总览出发，说明 RS 如何在 MAC 原语与 GMII 之间双向成帧、解析，再展开 1000BASE-X 的 PCS 状态机、FCS、前导码缩短，以及自动协商从重启页走到 LINK_OK 的过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="千兆以太网 GMII 与 1000BASE-X——从 MAC 原语到线路码组">
+<meta property="og:url" content="https://dataiswq.github.io/2026/09/12/GmacAndPcs/index.html">
+<meta property="og:site_name" content="BetterAndBetter">
+<meta property="og:description" content="从分层总览出发，说明 RS 如何在 MAC 原语与 GMII 之间双向成帧、解析，再展开 1000BASE-X 的 PCS 状态机、FCS、前导码缩短，以及自动协商从重启页走到 LINK_OK 的过程。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-09-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-11T16:00:00.000Z">
+<meta property="article:author" content="时间">
+<meta property="article:tag" content="8B&#x2F;10B">
+<meta property="article:tag" content="GMII">
+<meta property="article:tag" content="PCS">
+<meta property="article:tag" content="自动协商">
+<meta name="twitter:card" content="summary">
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.css">
+<link rel="stylesheet" href="/lib/mdui_043tiny/mdui.css">
+
+
+<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1789179252977">
+
+<link rel="stylesheet" href="/css/style.css?v=1789179252977">
+
+
+
+
+    
+        <link rel="stylesheet" href="/custom.css?v=1789179252978">
+    
+
+
+
+<script src="/lib/mdui_043tiny/mdui.js" async></script>
+<script src="/lib/fancybox/fancybox.umd.js" async></script>
+<script src="/lib/lax.min.js" async></script>
+
+
+<script async src="/js/app.js?v=1789179252978"></script>
+
+ 
+
+
+
+<link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+<meta name="generator" content="Hexo 8.1.2"></head><body class="nexmoe mdui-drawer-body-left"><div id="nexmoe-background"><div class="nexmoe-bg" style="background-image: url(/Picture/头像.jpg)"></div><div class="mdui-appbar mdui-shadow-0"><div class="mdui-toolbar"><a class="mdui-btn mdui-btn-icon mdui-ripple" mdui-drawer="{target: &#039;#drawer&#039;, swipe: true}" title="menu"><i class="mdui-icon nexmoefont icon-menu"></i></a><div class="mdui-toolbar-spacer"></div><a class="mdui-btn mdui-btn-icon" href="/" title="时间"><img src="/Picture/头像.jpg" alt="时间"></a></div></div></div><div id="nexmoe-header"><div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="时间">
+            <img src="/Picture/头像.jpg" alt="时间" alt="时间">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>5</div>
+        <div><span>Tags</span>11</div>
+        <div><span>Categories</span>4</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+    </div>
+    
+    
+        
+        <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+
+
+
+
+    
+        
+        <div class="nexmoe-widget-wrap">
+	<div class="nexmoe-widget nexmoe-social">
+		<a
+			class="mdui-ripple"
+			href="https://dataiswq.github.io/"
+			target="_blank"
+			mdui-tooltip="{content: 'GitHub'}"
+			style="
+				color: rgb(25, 23, 23);
+				background-color: rgba(25, 23, 23, .1);
+			"
+		>
+			<i
+				class="nexmoefont icon-github"
+			></i> </a
+		>
+	</div>
+</div>
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/以太网/">以太网</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/学习笔记/">学习笔记</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/学习计划/">学习计划</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/建立博客/">建立博客</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/8B-10B/" style="font-size: 10px;">8B/10B</a> <a href="/tags/Ethernet/" style="font-size: 20px;">Ethernet</a> <a href="/tags/GMII/" style="font-size: 10px;">GMII</a> <a href="/tags/GitHub-Pages/" style="font-size: 10px;">GitHub Pages</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/IEEE802-3/" style="font-size: 10px;">IEEE802.3</a> <a href="/tags/MAC/" style="font-size: 10px;">MAC</a> <a href="/tags/PCS/" style="font-size: 20px;">PCS</a> <a href="/tags/RTL/" style="font-size: 10px;">RTL</a> <a href="/tags/%E8%87%AA%E5%8A%A8%E5%8D%8F%E5%95%86/" style="font-size: 10px;">自动协商</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">记录</a>
+    </div>
+    
+      <script>
+        var maxTagcloud = parseInt(17);
+        var tags_length = parseInt(11);
+        var tags_arr = [];
+        for(var i = 0; i < tags_length; i++){
+          tags_arr.push(i);
+        }
+        tags_arr.sort(function (l, r) {
+          return Math.random() > 0.5 ? -1 : 1;
+        });
+        tags_arr = tags_arr.slice(0, maxTagcloud < tags_length ? tags_length - maxTagcloud : 0);
+        for(var tag_i = 0; tag_i < tags_arr.length; tag_i++){
+          document.getElementById("randomtagcloud").children[tags_arr[tag_i]].style.display = 'none';
+        }
+      </script>
+    
+  </div>
+
+    
+        
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/">2026</a><span class="archive-list-count">5</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/09/12/GmacAndPcs/">千兆以太网 GMII 与 1000BASE-X——从 MAC 原语到线路码组</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/15/MacLayerReadLog/">IEEE 802.3 MAC 层学习笔记（阶段一）</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/12/EthernetLearnPlan/">1G/10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/BlogSet/">Hexo 静态博客搭建指南——从本地到 GitHub Pages</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+   
+    <div class="nexmoe-copyright">
+        &copy; 2026 时间
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer --></div><div id="nexmoe-content"><div class="nexmoe-primary"><div class="nexmoe-post">
+  <article>
+    
+        <div class="nexmoe-post-cover absolute" style="padding-top: NaN%;"> 
+            <img src="/Picture/猫.jpg" alt="千兆以太网 GMII 与 1000BASE-X——从 MAC 原语到线路码组" loading="lazy">
+            <h1>千兆以太网 GMII 与 1000BASE-X——从 MAC 原语到线路码组</h1>
+        </div>
+    
+    
+    <div class="nexmoe-post-meta">
+    <div class="nexmoe-rainbow">
+        <a class="nexmoefont icon-calendar-fill">2026年09月12日</a>
+        
+            <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E4%BB%A5%E5%A4%AA%E7%BD%91/">以太网</a>
+        
+        
+    </div>
+    
+    
+    
+    
+    
+</div>
+
+    <h2 id="整体简述"><a href="#整体简述" class="headerlink" title="整体简述"></a>整体简述</h2><p>千兆以太网不是把同一套 MAC 直接焊到光模块上，中间隔着一层层双向适配：上层交出报文和链路指令，下层交出码组和线路状态；每一层都既要「装进去」，也要「拆出来」。</p>
+<p>本文按 IEEE Std 802.3-2022 整理 <strong>1000 Mb&#x2F;s</strong> 这条路径：</p>
+<ul>
+<li>Clause 34：千兆体系</li>
+<li>Clause 35：RS 与 GMII</li>
+<li>Clause 36：1000BASE-X PCS &#x2F; PMA</li>
+<li>Clause 37：1000BASE-X 自动协商</li>
+</ul>
+<p>管理寄存器见 Clause 22，受管对象见 Clause 30。文中 GMAC&#x2F;GMII 指千兆媒体独立接口，不是密码学里的 GMAC。状态图与正文冲突时，<strong>以状态图为准</strong>。</p>
+<p>先看分层，再分别写 RS 成帧&#x2F;解析、PCS 过程与同步、自动协商逻辑。</p>
+<hr>
+<h2 id="千兆以太网怎么分层"><a href="#千兆以太网怎么分层" class="headerlink" title="千兆以太网怎么分层"></a>千兆以太网怎么分层</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">MAC / MAC Control</span><br><span class="line">        │  PLS 服务原语（数据、载波、冲突、数据有效、LPI）</span><br><span class="line">        ▼</span><br><span class="line">RS（协调子层）  ←→  成帧 / 解析</span><br><span class="line">        │  GMII：8 bit @ 125 MHz + 控制/时钟 + MDC/MDIO</span><br><span class="line">        ▼</span><br><span class="line">PCS（物理编码） ←→  8B/10B、有序集、同步、自动协商</span><br><span class="line">        │  10-bit 码组 @ 125 MHz（可选 TBI）</span><br><span class="line">        ▼</span><br><span class="line">PMA（物理介质附属） ←→  串并转换、时钟恢复、comma 对齐</span><br><span class="line">        │  1.25 Gb/s 串行比特</span><br><span class="line">        ▼</span><br><span class="line">PMD → MDI → 光纤 / 铜缆 / 背板</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>子层</th>
+<th>向上提供什么</th>
+<th>向下交付什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RS</td>
+<td>把 GMII 上的帧和指示还原成 MAC 能用的报文与指令</td>
+<td>把 MAC 的报文与指令装配成 GMII 帧流</td>
+</tr>
+<tr>
+<td>PCS</td>
+<td>把线路码组还原成 GMII 字节、错误、载波和配置字</td>
+<td>把 GMII 字节与控制编码成连续 10-bit 码组</td>
+</tr>
+<tr>
+<td>PMA</td>
+<td>对齐后的 10-bit 码组与恢复时钟</td>
+<td>1.25 Gb&#x2F;s 串行比特</td>
+</tr>
+<tr>
+<td>自动协商（位于 PCS）</td>
+<td>链路能力、Ack、远端故障、<code>xmit</code> 模式</td>
+<td>介质上的 <code>/C/</code> 配置有序集</td>
+</tr>
+</tbody></table>
+<p><strong>速率关系</strong>：GMII 125 M 八位组&#x2F;s → PCS 125 M 码组&#x2F;s → 8B&#x2F;10B 后线路 <strong>1.25 Gb&#x2F;s</strong>。多出的 25% 是线路编码开销。GMII 只定义 1000 Mb&#x2F;s；10&#x2F;100 Mb&#x2F;s 用 Clause 22 的 MII。</p>
+<p>千兆相对 100 Mb&#x2F;s，比特时间按比例缩短。全双工最短包时间约为原来的 1&#x2F;10；半双工并非按 10 倍缩小，碰撞域里若有两台以上 DTE，必须用中继器组（Clause 41），且 <strong>一个碰撞域最多一台中继器</strong>。仅全双工的拓扑不允许中继器。</p>
+<p>本文 PCS&#x2F;协商细节针对 <strong>1000BASE-X</strong>（SX&#x2F;LX&#x2F;CX 共用 Clause 36，协商走 Clause 37）。1000BASE-T、T1、KX 分别走 Clause 28、98、73，不要混用。</p>
+<hr>
+<h2 id="协调子层-RS：成帧，也解析"><a href="#协调子层-RS：成帧，也解析" class="headerlink" title="协调子层 RS：成帧，也解析"></a>协调子层 RS：成帧，也解析</h2><p>RS 做的是 <strong>GMII ↔ MAC&#x2F;PLS 原语</strong> 的双向转换，不是单向把引脚翻译给 MAC。</p>
+<ul>
+<li><strong>发送（成帧）</strong>：收下 MAC 的报文和指令（数据、发送结束、载波延长、错误传播、LPI），按八位组对齐后装配成 GMII 帧流，在 <code>GTX_CLK</code> 域交给 PHY。</li>
+<li><strong>接收（解析）</strong>：在 <code>RX_CLK</code> 域读 <code>RXD/RX_DV/RX_ER</code>，认出帧界、SFD、延长、假载波、LPI 和帧内错误，把八位组还原成报文，把载波、冲突、数据有效还原成 PLS 指示。</li>
+</ul>
+<p>没有发送成帧，MAC 的 request 到不了 PHY；没有接收解析，PHY 的帧也回不成 MAC 的 indication。EEE 时这组映射还会被 <code>LP_IDLE.request/indication</code> 改写。</p>
+<p>GMII 本身是 MAC（经 RS）与 PHY 之间的并行数字边界：独立的 8 位收发通路、各自时钟，以及 <code>MDC/MDIO</code>。它屏蔽网线、光模块和编码电平，使同一 MAC 可接不同千兆 PHY。基于 MII，多数信号名沿用，但为 1000 Mb&#x2F;s 增加了载波延长、LPI、假载波等组合。</p>
+<h3 id="发送侧如何把报文打成帧"><a href="#发送侧如何把报文打成帧" class="headerlink" title="发送侧如何把报文打成帧"></a>发送侧如何把报文打成帧</h3><p>PLS_DATA.request 的 <code>OUTPUT_UNIT</code>（<code>ONE/ZERO/DATA_COMPLETE/EXTEND/EXTEND_ERROR</code>）每 8 次聚成一拍，和指令一起编码到 <code>TXD[7:0]</code>、<code>TX_EN</code>、<code>TX_ER</code>。</p>
+<table>
+<thead>
+<tr>
+<th>指令&#x2F;数据</th>
+<th>GMII 装配结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>普通报文八位组</td>
+<td><code>TX_EN=1</code>、<code>TX_ER=0</code>，<code>TXD</code> 为该字节；前导码首字节与 <code>TX_EN</code> 同时有效</td>
+</tr>
+<tr>
+<td>发送结束 <code>DATA_COMPLETE</code></td>
+<td>最后一个 FCS 字节后、下一 <code>GTX_CLK</code> 上升沿前撤销 <code>TX_EN</code></td>
+</tr>
+<tr>
+<td>载波延长</td>
+<td><code>TX_EN=0</code>、<code>TX_ER=1</code>、<code>TXD=0x0F</code>，必须紧跟在帧数据之后</td>
+</tr>
+<tr>
+<td>延长错误</td>
+<td><code>TX_EN=0</code>、<code>TX_ER=1</code>、<code>TXD=0x1F</code></td>
+</tr>
+<tr>
+<td>帧内错误传播</td>
+<td><code>TX_EN=1</code>、<code>TX_ER=1</code>；PHY 在帧中某处发无效码组，字节位置不要求保持</td>
+</tr>
+<tr>
+<td>LPI</td>
+<td><code>TX_EN=0</code>、<code>TX_ER=1</code>、<code>TXD=0x01</code></td>
+</tr>
+<tr>
+<td>帧间空闲</td>
+<td><code>TX_EN=TX_ER=0</code>；此时 <code>TXD</code> 对 PHY 无影响</td>
+</tr>
+</tbody></table>
+<p>整段数据流是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;inter-frame&gt;&lt;preamble&gt;&lt;sfd&gt;&lt;data&gt;&lt;efd&gt;&lt;extend&gt;</span><br></pre></td></tr></table></figure>
+
+<p>MAC 给出 7 个前导码 <code>10101010</code>，再加 SFD <code>10101011</code>（按串行方向书写，每字节 LSB 先出）。<code>TXD[0]</code>&#x2F;<code>RXD[0]</code> 是 LSB。突发内各帧用载波延长分隔，突发之间才回到真正空闲。</p>
+<p>中继器可把输入口解析到的 <code>RX_ER</code> 再编成输出口的 <code>TX_ER</code>，把错误继续向下游成帧。</p>
+<h3 id="帧里的-FCS-是什么"><a href="#帧里的-FCS-是什么" class="headerlink" title="帧里的 FCS 是什么"></a>帧里的 FCS 是什么</h3><p><code>&lt;data&gt;</code> 在 GMII 上不是「净荷」两个字，而是 MAC 已经组好的后半段：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DA(6) → SA(6) → Length/Type(2) → 客户数据 → Pad（如需凑最短帧） → FCS(4)</span><br></pre></td></tr></table></figure>
+
+<p><strong>FCS（Frame Check Sequence）</strong> 由 <strong>MAC</strong> 按 Clause 3.2.9 计算，不是 RS 或 PCS 生成。它是 4 字节 CRC-32，生成多项式为</p>
+<p>$$x^{32}+x^{26}+x^{23}+x^{22}+x^{16}+x^{12}+x^{11}+x^{10}+x^{8}+x^{7}+x^{5}+x^{4}+x^{2}+x+1$$</p>
+<p>覆盖范围从 <strong>DA 第一比特到数据&#x2F;填充最后一比特</strong>，<strong>不含</strong>前导码和 SFD。发送时作为 <code>TX_EN=1</code> 期间最后 4 个八位组出现，之后才撤销 <code>TX_EN</code>。</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>对 FCS 做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAC</td>
+<td>发送计算并附上；接收用同一算法校验，失败即 FrameCheckError</td>
+</tr>
+<tr>
+<td>RS</td>
+<td>不计算 FCS。<code>RX_DV</code> 与 <code>RX_ER</code> 同时有效，或收到延长错误时，须保证 MAC 最终校验失败</td>
+</tr>
+<tr>
+<td>PCS</td>
+<td>把四个字节当成普通 <code>/D/</code> 编解码。<code>check_end</code> 只是让 MAC 仍能切出「最后 4 字节是 FCS」</td>
+</tr>
+<tr>
+<td>PMA&#x2F;PMD</td>
+<td>不感知 FCS</td>
+</tr>
+</tbody></table>
+<p>GMII 上的「帧结束」靠 <code>TX_EN</code>&#x2F;<code>RX_DV</code> 撤销，不靠某个特殊 FCS 编码。线路上的 <code>/T/R/…</code> 是 PCS 包尾，不是 CRC。</p>
+<h3 id="为什么前导码可以被删减"><a href="#为什么前导码可以被删减" class="headerlink" title="为什么前导码可以被删减"></a>为什么前导码可以被删减</h3><p>10 Mb&#x2F;s 时代，前导码主要给对端模拟电路锁时钟。1000BASE-X 改由连续 8B&#x2F;10B（尤其是帧间 <code>/I/</code>）恢复时钟，<strong>目的地 MAC 只要看到完整 SFD 就能解释后面的 DA</strong>。因此源 GMII 到目的 GMII 之间允许缩短前导码，极端情况是接收侧 <code>RX_DV</code> <strong>直接从 SFD 开始、前面一个前导码字节都没有</strong>。这不一定每种 PHY 都会发生，但 MAC&#x2F;RS 必须按这个最小值设计。</p>
+<p>各层会「吃掉」开头字节的常见原因：</p>
+<ol>
+<li><strong>PCS 要等当前有序集发完再发 <code>/S/</code></strong>。<code>TX_EN</code> 往往落在某个 <code>/I/</code> 或 <code>/C/</code> 中间，对齐期间已经出现在 TX GMII 上的前导码不会原样上线路。</li>
+<li><strong><code>/S/</code> 本身占掉 1 个前导码位置</strong>。发送用 <code>/K27.7/</code> 换掉当前字节，接收再还原成 <code>01010101</code>，不保证 7 字节原数到达。</li>
+<li><strong>PMA 重对齐最多丢掉 4 个码组</strong>。包头更容易碰上尚未对齐，被滑掉的常常是前导码而不是 DA&#x2F;FCS。</li>
+<li><strong>收钟锁定会拉长 <code>RX_CLK</code></strong>。<code>CRS</code> 到 <code>RX_DV</code> 之间 PHY 可以拉住时钟，这段时间不往 GMII 吐前导码。</li>
+<li><strong>中继器或弹性缓冲增删 <code>/I2/</code></strong>，包起始若落在调整窗口附近，目的侧前导码也会变短。</li>
+</ol>
+<blockquote>
+<p><strong>不能删的是 SFD 和其后的 DA…FCS。</strong> 前导码没有载荷语义；FCS 仍从 DA 算到数据末，与前面少了几个 <code>10101010</code> 无关。</p>
+</blockquote>
+<h3 id="接收侧如何从帧里拆出报文"><a href="#接收侧如何从帧里拆出报文" class="headerlink" title="接收侧如何从帧里拆出报文"></a>接收侧如何从帧里拆出报文</h3><p>在 <code>RX_CLK</code> 上升沿采样 <code>RXD/RX_DV/RX_ER</code>，还原数据、数据有效、载波和冲突。</p>
+<table>
+<thead>
+<tr>
+<th>GMII 现象</th>
+<th>解析给 MAC 的结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>RX_DV=1</code> 且 <code>RX_ER=0</code></td>
+<td>有效报文八位组；<code>RX_DV</code> 最迟须覆盖到完整 SFD</td>
+</tr>
+<tr>
+<td><code>RX_DV</code> 下降</td>
+<td>接收帧结束</td>
+</tr>
+<tr>
+<td><code>RX_DV=1</code> 且 <code>RX_ER=1</code></td>
+<td>帧内错误；RS 必须让 MAC 看到 FrameCheckError</td>
+</tr>
+<tr>
+<td><code>RX_DV=0</code>、<code>RX_ER=1</code>、<code>RXD=0x0F</code> &#x2F; <code>0x1F</code></td>
+<td>延长 &#x2F; 延长错误</td>
+</tr>
+<tr>
+<td><code>RXD=0x0E</code></td>
+<td>假载波，不当业务帧</td>
+</tr>
+<tr>
+<td><code>RXD=0x01</code></td>
+<td>正在收 LPI；对 MAC 仍指示 IDLE</td>
+</tr>
+</tbody></table>
+<p>半双工不必把 <code>TXD</code> 回送到 <code>RXD</code>；全双工除非寄存器 0.14 回环，<strong>禁止</strong>自发回环。</p>
+<p>PLS 与 GMII 的对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>PLS 原语</th>
+<th>GMII 信号</th>
+<th>方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PLS_DATA.request</code></td>
+<td><code>TXD</code>、<code>TX_EN</code>、<code>TX_ER</code>、<code>GTX_CLK</code></td>
+<td>MAC → RS → PHY（成帧）</td>
+</tr>
+<tr>
+<td><code>PLS_DATA.indication</code></td>
+<td><code>RXD</code>、<code>RX_DV</code>、<code>RX_ER</code>、<code>RX_CLK</code></td>
+<td>PHY → RS → MAC（解析）</td>
+</tr>
+<tr>
+<td><code>PLS_CARRIER.indication</code></td>
+<td><code>CRS</code></td>
+<td>PHY → RS → MAC</td>
+</tr>
+<tr>
+<td><code>PLS_SIGNAL.indication</code></td>
+<td><code>COL</code></td>
+<td>PHY → RS → MAC</td>
+</tr>
+<tr>
+<td><code>PLS_DATA_VALID.indication</code></td>
+<td><code>RX_DV</code>、<code>RX_ER</code>、<code>RXD</code></td>
+<td><code>RX_DV=1</code>，或延长&#x2F;延长错误时为有效</td>
+</tr>
+</tbody></table>
+<h3 id="信号、时钟与电气"><a href="#信号、时钟与电气" class="headerlink" title="信号、时钟与电气"></a>信号、时钟与电气</h3><table>
+<thead>
+<tr>
+<th>方向</th>
+<th>信号</th>
+<th>驱动方</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>发送</td>
+<td><code>GTX_CLK</code></td>
+<td>RS&#x2F;MAC</td>
+<td>125 MHz ±100 ppm；PHY 上升沿采样</td>
+</tr>
+<tr>
+<td>发送</td>
+<td><code>TXD[7:0]</code>、<code>TX_EN</code>、<code>TX_ER</code></td>
+<td>RS&#x2F;MAC</td>
+<td>成帧后的数据与控制</td>
+</tr>
+<tr>
+<td>接收</td>
+<td><code>RX_CLK</code></td>
+<td>PHY</td>
+<td>合格时 125 MHz ±0.01%；RS 上升沿采样</td>
+</tr>
+<tr>
+<td>接收</td>
+<td><code>RXD[7:0]</code>、<code>RX_DV</code>、<code>RX_ER</code></td>
+<td>PHY</td>
+<td>待解析的数据与控制</td>
+</tr>
+<tr>
+<td>状态</td>
+<td><code>CRS</code>、<code>COL</code></td>
+<td>PHY</td>
+<td>半双工载波&#x2F;冲突；全双工行为未规定</td>
+</tr>
+<tr>
+<td>管理</td>
+<td><code>MDC</code>、<code>MDIO</code></td>
+<td>STA</td>
+<td>Clause 22 管理</td>
+</tr>
+</tbody></table>
+<p><code>RX_CLK</code> 与 <code>GTX_CLK</code> <strong>没有保证的相位关系</strong>。失锁时改用标称时钟；切换只允许在 <code>RX_DV=RX_ER=0</code> 时进行。</p>
+<p>交流（表 35-8）：<code>GTX_CLK</code> 周期 7.50–8.50 ns，<code>RX_CLK</code> 最小周期 7.50 ns，高&#x2F;低电平各 ≥2.50 ns，边沿 ≤1.00 ns，<code>VIL_AC ≤ 0.70 V</code>，<code>VIH_AC ≥ 1.90 V</code>，摆率幅值 ≥0.6 V&#x2F;ns。建立&#x2F;保持有两套：源端 ≥2.50&#x2F;0.50 ns，接收器引脚 ≥2.00&#x2F;0 ns。测量点在接收器输入。</p>
+<p>直流（表 35-7）：<code>VOH</code> 2.10–3.60 V，<code>VOL</code> ≤0.50 V，<code>VIH</code> ≥1.70 V，<code>VIL</code> ≤0.90 V。允许驱动器与接收器使用不同电源。</p>
+<p>发送&#x2F;接收编码可记这两张表：</p>
+<table>
+<thead>
+<tr>
+<th><code>TX_EN</code></th>
+<th><code>TX_ER</code></th>
+<th><code>TXD</code></th>
+<th>成帧含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>任意</td>
+<td>空闲</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td><code>0x01</code> &#x2F; <code>0x0F</code> &#x2F; <code>0x1F</code></td>
+<td>LPI &#x2F; 延长 &#x2F; 延长错误</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>任意</td>
+<td>正常数据</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>任意</td>
+<td>错误传播</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th><code>RX_DV</code></th>
+<th><code>RX_ER</code></th>
+<th><code>RXD</code></th>
+<th>解析含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>任意</td>
+<td>空闲</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td><code>0x01</code> &#x2F; <code>0x0E</code> &#x2F; <code>0x0F</code></td>
+<td>LPI &#x2F; 假载波 &#x2F; 延长</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>任意</td>
+<td>正常数据</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>任意</td>
+<td>帧内错误</td>
+</tr>
+</tbody></table>
+<h3 id="低功耗空闲-LPI"><a href="#低功耗空闲-LPI" class="headerlink" title="低功耗空闲 LPI"></a>低功耗空闲 LPI</h3><p>LPI 插在 PLS 与 GMII 之间，EEE 使用 Annex 4A 简化全双工 MAC（带载波推迟）。<code>LP_IDLE.request(ASSERT)</code> 仅当 <code>link_status=OK</code>，且链路变 OK 后至少 <strong>1 s</strong> 内不得 ASSERT。退出后须等 <code>Tw_sys_tx</code>（1000BASE-T 最小 16.5 µs，1000BASE-KX 最小 13.26 µs）。发送进入 LPI 至少 9 拍后才可停 <code>GTX_CLK</code>；接收撤销 LPI 前必须先恢复 <code>RX_CLK</code> 并至少产生一个上升沿。</p>
+<hr>
+<h2 id="PCS：从-GMII-字节到线路码组"><a href="#PCS：从-GMII-字节到线路码组" class="headerlink" title="PCS：从 GMII 字节到线路码组"></a>PCS：从 GMII 字节到线路码组</h2><p>PCS 把已经成帧的八位组流变成介质上可连续跑的 10-bit 码组；接收时再拆回 GMII，给 RS 解析。客户是经 RS 的 MAC，也可以是中继器。1000BASE-X 的 PCS&#x2F;PMA 改编自 Fibre Channel 的 8B&#x2F;10B，目标 BER 为 $10^{-12}$。GMII 与 TBI 都是可选物理实例，片内可以不引出。</p>
+<p>可观察口宽度有硬约束：GMII 必须八位组宽，TBI 必须 10 bit，MDI 必须串行。</p>
+<h3 id="五个过程怎么配合"><a href="#五个过程怎么配合" class="headerlink" title="五个过程怎么配合"></a>五个过程怎么配合</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GMII TXD/TX_EN/TX_ER          GMII RXD/RX_DV/RX_ER</span><br><span class="line">        │                              ▲</span><br><span class="line">PCS Transmit ←── xmit ── Auto-Negotiation ── rx_Config_Reg</span><br><span class="line">        │                              │</span><br><span class="line">        ▼                              │</span><br><span class="line">有序集 / 码组状态机              PCS Receive</span><br><span class="line">        │                              ▲</span><br><span class="line">        ▼                              │</span><br><span class="line">      PMA 串行化 / 对齐 / 恢复时钟</span><br><span class="line">        │</span><br><span class="line">Synchronization（sync_status）    Carrier Sense（CRS）</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>Transmit</strong>：看 GMII 与 <code>xmit</code>。<code>CONFIGURATION</code> 发 <code>/C/</code>，<code>IDLE</code> 发 <code>/I/</code>，<code>DATA</code> 才在空闲里穿插包。同时用「正在发且正在收」产生 <code>COL</code>。</li>
+<li><strong>Receive</strong>：把同步后的码组译成 GMII 信号；<code>xmit≠DATA</code> 时把 <code>/C/</code>、<code>/I/</code> 和配置字交给自动协商。</li>
+<li><strong>Carrier Sense</strong>：非中继器在发送或接收为真时开 <code>CRS</code>；中继器只看接收。</li>
+<li><strong>Synchronization</strong>：判定码组是否对齐，输出 <code>sync_status</code>。</li>
+<li><strong>Auto-Negotiation</strong>：Clause 37。1000BASE-KX 改走 Clause 73。</li>
+</ol>
+<p>正文与状态图冲突时，以图 36-5 到 36-9 为准。</p>
+<h3 id="8B-10B-和运行差分"><a href="#8B-10B-和运行差分" class="headerlink" title="8B&#x2F;10B 和运行差分"></a>8B&#x2F;10B 和运行差分</h3><p>数据编成 <strong>D 码组</strong> <code>/Dx.y/</code>，控制编成 <strong>K 码组</strong> 或有序集。线路上 <code>tx_code-group[0]</code> 先出。每个符号 3–8 次跳变，用来恢复时钟并限制连码。</p>
+<p><strong>Running Disparity（RD）</strong> 只有正、负两态。发送上电从<strong>负</strong>开始；接收可任选。每个八位组有 RD−&#x2F;RD+ 两列编码。RD 按子块算：<code>abcdei</code> 与 <code>fghj</code>。1 多于 0（或特定中性块）则结束为正。接收只在当前 RD 那一列查找，找不到即无效，<strong>但仍用该码组更新 RD</strong>——所以「这一拍才无效」可能是更早的错误破坏了差分。</p>
+<p>多码组有序集的<strong>首码组必须落在偶编号位置</strong>。comma+ 为 <code>0011111</code>，comma- 为 <code>1100000</code>。</p>
+<p>常用有序集：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>编码</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/C1/</code> <code>/C2/</code></td>
+<td><code>/K28.5/D21.5/</code> 或 <code>/D2.2/</code> + Config_Reg</td>
+<td>自动协商</td>
+</tr>
+<tr>
+<td><code>/I1/</code> <code>/I2/</code></td>
+<td><code>/K28.5/D5.6/</code>、<code>/K28.5/D16.2/</code></td>
+<td>空闲；<code>/I1/</code> 把 RD 拉回负</td>
+</tr>
+<tr>
+<td><code>/S/</code></td>
+<td><code>/K27.7/</code></td>
+<td>包起始，接收时还原为 <code>01010101</code></td>
+</tr>
+<tr>
+<td><code>/T/</code> <code>/R/</code></td>
+<td><code>/K29.7/</code> <code>/K23.7/</code></td>
+<td>包结束、延长、偶边界填充</td>
+</tr>
+<tr>
+<td><code>/V/</code></td>
+<td><code>/K30.7/</code></td>
+<td>错误传播</td>
+</tr>
+<tr>
+<td><code>/LI1/</code> <code>/LI2/</code></td>
+<td><code>/K28.5/D6.5/</code>、<code>/K28.5/D26.4/</code></td>
+<td>LPI</td>
+</tr>
+</tbody></table>
+<h3 id="发送：先定有序集，再定-10-bit"><a href="#发送：先定有序集，再定-10-bit" class="headerlink" title="发送：先定有序集，再定 10 bit"></a>发送：先定有序集，再定 10 bit</h3><p>有序集状态机（图 36-5）决定下一拍发哪一类符号，码组状态机（图 36-6）再按奇偶和 RD 选出具体 10 bit。</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>大致动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CONFIGURATION</code></td>
+<td>发 <code>/C/</code></td>
+</tr>
+<tr>
+<td><code>IDLE</code></td>
+<td>发 <code>/I/</code></td>
+</tr>
+<tr>
+<td><code>START_OF_PACKET</code></td>
+<td>发 <code>/S/</code>，<code>COL=receiving</code></td>
+</tr>
+<tr>
+<td><code>TX_DATA</code></td>
+<td>发 <code>/D/</code></td>
+</tr>
+<tr>
+<td><code>TX_DATA_ERROR</code></td>
+<td>发 <code>/V/</code></td>
+</tr>
+<tr>
+<td><code>END_OF_PACKET_*</code></td>
+<td>发 <code>/T/</code>，必要时再 <code>/R/</code> 对齐偶边界</td>
+</tr>
+<tr>
+<td><code>CARRIER_EXTEND</code></td>
+<td>先 <code>/T/</code>（约两拍），再每拍 <code>/R/</code></td>
+</tr>
+</tbody></table>
+<p><code>TX_EN</code> 新置位时，等当前有序集结束再用 <code>/S/</code> 替换那一拍前导码。单包或突发首包的 <code>/S/</code> 跟在 <code>/I/</code> 后，突发后续包跟在 <code>/R/</code> 后。</p>
+<h3 id="接收：先分协商区，再拆数据包"><a href="#接收：先分协商区，再拆数据包" class="headerlink" title="接收：先分协商区，再拆数据包"></a>接收：先分协商区，再拆数据包</h3><p><code>sync_status=FAIL</code> 时进入 <code>LINK_FAILED</code>，不把未对齐符号当业务帧。</p>
+<p>协商&#x2F;空闲区认 <code>/K28.5/</code>：下一码是 <code>/D21.5/</code> 或 <code>/D2.2/</code> 就收配置字，否则当 IDLE。<code>xmit=DATA</code> 且载波不是 <code>/S/</code>，判假载波（<code>RXD=0x0E</code>）。</p>
+<p>数据包区见到 <code>/S/</code> 后：</p>
+<ol>
+<li><code>RX_DV=1</code>，把 <code>/S/</code> 换成 <code>01010101</code>。</li>
+<li>后续合法 <code>/D/</code> 译到 <code>RXD</code>；非法则 <code>RX_ER=1</code>。</li>
+<li><code>check_end</code> 看包尾：<code>/T/R/R/</code> 或 <code>/T/R/K28.5/</code> 正常结束；<code>/R/R/S/</code> 是突发下一包。</li>
+</ol>
+<p><code>CRS</code> 在 <code>receiving=1</code>，或非中继器且 <code>transmitting=1</code> 时置位。<code>COL</code> 在包内及延长期等于当前 <code>receiving</code>。</p>
+<h3 id="同步时，Rx-会不会冻住奇偶和-RD"><a href="#同步时，Rx-会不会冻住奇偶和-RD" class="headerlink" title="同步时，Rx 会不会冻住奇偶和 RD"></a>同步时，Rx 会不会冻住奇偶和 RD</h3><p>不会。未锁定时接收端并不维持一套「等合适码流再动」的奇偶和正负。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LOSS_OF_SYNC</span><br><span class="line">    → 三个「最左位置 comma」有序集，中间无无效码</span><br><span class="line">SYNC_ACQUIRED_1（对齐偶边界）</span><br><span class="line">    → 每 4 码一组检验，SYNC_ACQUIRED_2/3/4 滞回</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>未锁（<code>LOSS_OF_SYNC</code>）</th>
+<th>锁上之后</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>码组边界</td>
+<td>未知，窗口可能切错</td>
+<td>comma 在最左，有序集从偶位置开始</td>
+</tr>
+<tr>
+<td><code>rx_even</code></td>
+<td>尚未建立。第三个最左 comma 时 <strong>强制为 TRUE</strong>，不沿用旧值</td>
+<td>每码翻转</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>上电任选正或负；之后每个 10-bit 窗口都更新，无效也更新</td>
+<td>继续按对齐码组更新；<code>/I1/</code> 纠回负</td>
+</tr>
+</tbody></table>
+<p>未对齐时这些 RD&#x2F;无效判决没有链路含义，也不能交给 MAC。失锁再锁是重新标定奇偶，不是保持旧状态。<code>sync_status=FAIL</code> 持续 <strong>10 ms</strong> 后会启动自动协商并发送 <code>/C/</code>。PMA 见到 comma+ 可重对齐，最多增删 4 个码组。</p>
+<h3 id="PMA-衔接"><a href="#PMA-衔接" class="headerlink" title="PMA 衔接"></a>PMA 衔接</h3><p>PCS 以 125 MHz 把 10-bit 码组交给 PMA；PMA 串行化，<strong>bit 0 先出</strong>，线上 1.25 Gb&#x2F;s。固有延迟至少 10 bit time。可选 TBI 用 <code>PMA_TX_CLK</code> 和一对 62.5 MHz 相差 180° 的接收钟。</p>
+<hr>
+<h2 id="自动协商：在-PCS-里，不走-GMII-数据脚"><a href="#自动协商：在-PCS-里，不走-GMII-数据脚" class="headerlink" title="自动协商：在 PCS 里，不走 GMII 数据脚"></a>自动协商：在 PCS 里，不走 GMII 数据脚</h2><p>1000BASE-X 自动协商位于 <strong>PCS 内</strong>，用 <code>/C/</code> 与 <code>/I/</code> 在 <strong>介质</strong>上交换能力，<strong>不经过 GMII 数据总线</strong>。协商完成不等于光功率或 BER 合格。对等、无主从。进入或退出都可能短暂丢帧。1000BASE-KX 改走 Clause 73。</p>
+<p>本端可以少广告自己有的能力，但<strong>不得广告没有的能力</strong>。</p>
+<h3 id="和-PCS-怎么交接"><a href="#和-PCS-怎么交接" class="headerlink" title="和 PCS 怎么交接"></a>和 PCS 怎么交接</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">AN 状态机</span><br><span class="line">   xmit ─────────► PCS Transmit（/C/ 或 /I/ 或 DATA 包）</span><br><span class="line">   tx_Config_Reg ─► 编进 /C1/C2/ 后两字节</span><br><span class="line">   rx_Config_Reg ◄─ PCS Receive 从 /C/ 解码</span><br><span class="line">   RUDI(/C/, /I/, INVALID) ◄─ 接收过程消息</span><br></pre></td></tr></table></figure>
+
+<p><code>link_timer</code> 标称 10 ms（+10 ms &#x2F; −0 s）。匹配函数由码流连续计算：</p>
+<ul>
+<li><code>ability_match</code>：连续三个 Config（忽略 Ack）相同</li>
+<li><code>acknowledge_match</code>：连续三个相同且 Ack&#x3D;1</li>
+<li><code>consistency_match</code>：两者对应的值一致，否则必须重启</li>
+<li><code>idle_match</code>：连续三个 <code>/I/</code></li>
+</ul>
+<h3 id="状态机怎么走完"><a href="#状态机怎么走完" class="headerlink" title="状态机怎么走完"></a>状态机怎么走完</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">AN_ENABLE → AN_RESTART（先发全零 Config）</span><br><span class="line">         → ABILITY_DETECT（本端 Base Page，Ack=0）</span><br><span class="line">         → ACKNOWLEDGE_DETECT（置 Ack，等对端 Ack）</span><br><span class="line">         → COMPLETE_ACKNOWLEDGE（再发满一个 link_timer）</span><br><span class="line">              ├─ 双方还有 Next Page → NEXT_PAGE_WAIT</span><br><span class="line">              └─ 否则 IDLE_DETECT（改发 /I/）</span><br><span class="line">                   → LINK_OK（xmit=DATA，协商完成）</span><br></pre></td></tr></table></figure>
+
+<p>实现上记住五条：重启页必须先发全 0；Ack 至少三个连续匹配页之后才置；一致性失败不得完成；重新协商会丢帧；想固定某模式时，建议仍开协商、只广告该模式。</p>
+<h3 id="Base-Page-和寄存器"><a href="#Base-Page-和寄存器" class="headerlink" title="Base Page 和寄存器"></a>Base Page 和寄存器</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">D15  D14  D13  D12  D11–D9  D8       D7      D6  D5  D4–D0</span><br><span class="line"> NP   Ack  RF2  RF1  rsvd    ASM_DIR  PAUSE   HD  FD  rsvd</span><br></pre></td></tr></table></figure>
+
+<p>双工解析：<strong>全双工优先于半双工</strong>。PAUSE 按双方 <code>PAUSE/ASM_DIR</code> 组合成只关、只发、只收或对称收发。远端故障：<code>00</code> 正常，<code>01</code> Offline，<code>10</code> Link_Failure，<code>11</code> 协商错误。</p>
+<p>常用管理寄存器：0（使能&#x2F;重启&#x2F;回环）、1（完成、Fault、link）、4&#x2F;5（本端&#x2F;对端 Base Page）、6（Page Received）、7&#x2F;8（Next Page）。</p>
+<hr>
+<h2 id="时延与排障顺序"><a href="#时延与排障顺序" class="headerlink" title="时延与排障顺序"></a>时延与排障顺序</h2><p>半双工要保证能看到冲突；全双工主要保证 PAUSE 可预期。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>上限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GMII <code>TX_EN=1</code> 采样至 MDI 输出</td>
+<td>136 bit</td>
+</tr>
+<tr>
+<td>半双工：MDI → <code>CRS</code>&#x2F;<code>COL</code> 置位或撤销</td>
+<td>各 192 bit</td>
+</tr>
+<tr>
+<td>全双工：MDI → <code>RX_DV</code> 撤销</td>
+<td>192 bit</td>
+</tr>
+<tr>
+<td>半双工 DTE：MAC 发送开始 → MDI</td>
+<td>184 bit</td>
+</tr>
+<tr>
+<td>半双工 DTE：MDI → 冲突检测</td>
+<td>240 bit</td>
+</tr>
+</tbody></table>
+<p>建议按层排查：PMD 是否可见 → PMA 是否锁定 comma → PCS 同步与无效码组 → <code>/C/</code> 和寄存器核对协商 → GMII 成帧&#x2F;解析边沿 → 最后才查 MAC FCS 和队列。底层未同步时，上层抓包「没有帧」是症状，不是根因。</p>
+<hr>
+<h2 id="实现时要注意什么"><a href="#实现时要注意什么" class="headerlink" title="实现时要注意什么"></a>实现时要注意什么</h2><p>逻辑上：</p>
+<ul>
+<li>RS <strong>两侧都要做</strong>：发送从预导码装到 FCS，接收按 SFD 拆开，错误路径能迫使 FrameCheckError。</li>
+<li><code>RX_CLK</code> 与 <code>GTX_CLK</code> 分域，不要假设同相。</li>
+<li>接收须容忍「只有 SFD、无前导码字节」。</li>
+<li>PCS 不是一张 8B&#x2F;10B 查找表，要有发送&#x2F;接收&#x2F;同步状态机和 <code>xmit</code> 门控。</li>
+<li><code>xmit</code> 未到 <code>DATA</code> 时，业务帧不上介质，<code>/C/</code> 也不当业务帧交给 MAC。</li>
+<li>同步丢失 ≥10 ms 必须进入 <code>/C/</code>；<code>consistency_match</code> 失败必须重启协商。</li>
+</ul>
+<p>硬件上：在接收器输入点测直流&#x2F;交流和两套建立保持；覆盖最短前导码、假载波、延长、突发、冲突、LPI 和协商重启。不用单一 link up 代替误码和光电预算。</p>
+<hr>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><p><strong>Q：GMII 是不是就是 RGMII，或者就是网线上跑的协议？</strong><br>A：都不是。GMII 是 8 位、125 MHz 的 MAC–PHY 并行接口。RGMII 用双沿减脚，时序不同。网线&#x2F;光纤侧由 PCS&#x2F;PMA&#x2F;PMD 处理。</p>
+<p><strong>Q：125 MHz 是不是只能跑 125 Mb&#x2F;s？</strong><br>A：每时钟传 8 bit，线速是 1 Gb&#x2F;s。8B&#x2F;10B 之后线路是 1.25 Gb&#x2F;s。</p>
+<p><strong>Q：RS 是不是只负责把 GMII 信号翻译给 MAC？</strong><br>A：不是。它既要把 MAC 报文&#x2F;指令打成 GMII 帧，也要从 GMII 帧拆回报文和指示。</p>
+<p><strong>Q：FCS 是谁算的？PCS 会检查 CRC 吗？</strong><br>A：MAC 算、MAC 查。PCS 把 FCS 当普通数据码组；RS 只在出错时保证 MAC 最终校验失败。</p>
+<p><strong>Q：为什么接收到的前导码比发送的短？</strong><br>A：千兆不再靠前导码锁钟。PCS 等有序集对齐、<code>/S/</code> 替换、PMA 滑码、收钟拉长，都会吃掉开头的 <code>10101010</code>。只要 SFD 完整即可。</p>
+<p><strong>Q：PCS 同步完成前，接收端会保持自己的奇偶和 RD 不变吗？</strong><br>A：不会冻住。未锁定时窗口可能切错，RD 仍按每个 10-bit 窗口更新；奇偶在第三个最左 comma 时被强制标成偶，不沿用失锁前的值。</p>
+<p><strong>Q：自动协商完成是不是就说明光纤&#x2F;线缆没问题？</strong><br>A：不是。<code>/C/</code> 只交换能力，不测光功率和 BER。协商也不走 GMII 数据脚。</p>
+<p><strong>Q：全双工能不能拿 CRS&#x2F;COL 当控制？</strong><br>A：标准未规定全双工下它们的行为，不能当收发依据。半双工不必、全双工禁止自发把发送回环到接收（除非 0.14）。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>读完可以按这条线把实现串起来：</p>
+<ol>
+<li>千兆链路是分层双向管道，不是单向数据泵。</li>
+<li>RS 在 MAC 原语与 GMII 之间成帧和解析；FCS 由 MAC 计算，前导码允许被 PHY 缩短。</li>
+<li>PCS 用状态机区分协商、空闲和业务，再用 8B&#x2F;10B 送到 1.25 Gb&#x2F;s 串行线路。</li>
+<li>同步完成前，Rx 的奇偶由 comma 重新标定，RD 持续按窗口更新，二者都不会「冻住等好码」。</li>
+<li>自动协商在 PCS 内用 <code>/C/</code> 走完重启 → 能力 → Ack → 空闲 → <code>LINK_OK</code> 后，才允许 <code>xmit=DATA</code>。</li>
+</ol>
+<p>正确实现要让每一层的帧界、指令、码组、时钟、协商和时延对齐，而不是只让 <code>TXD/RXD</code> 跑到 125 MHz。设计与合规测试以完整、已授权的 IEEE 802.3 原文和器件手册为准。</p>
+
+    
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>时间<br>
+        <strong>Link：</strong><a href="https://dataiswq.github.io/2026/09/12/GmacAndPcs/" title="https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;09&#x2F;12&#x2F;GmacAndPcs&#x2F;" target="_blank" rel="noopener">https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;09&#x2F;12&#x2F;GmacAndPcs&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+   
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/8B-10B/" rel="tag">8B/10B</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/GMII/" rel="tag">GMII</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/PCS/" rel="tag">PCS</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E8%87%AA%E5%8A%A8%E5%8D%8F%E5%95%86/" rel="tag">自动协商</a>
+    
+</div>
+  
+  
+    <script async src="/js/copy-codeblock.js?v=1789179252916"></script>
+  
+
+  
+</div></div><div class="nexmoe-post-right">    <div class="nexmoe-fixed">
+        <div class="nexmoe-tool">
+
+            
+
+            
+            
+            <button class="mdui-fab catalog" style="overflow:unset;">
+                <i class="nexmoefont icon-i-catalog"></i>
+                <div class="nexmoe-toc">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E7%AE%80%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">整体简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%83%E5%85%86%E4%BB%A5%E5%A4%AA%E7%BD%91%E6%80%8E%E4%B9%88%E5%88%86%E5%B1%82"><span class="toc-number">2.</span> <span class="toc-text">千兆以太网怎么分层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E8%B0%83%E5%AD%90%E5%B1%82-RS%EF%BC%9A%E6%88%90%E5%B8%A7%EF%BC%8C%E4%B9%9F%E8%A7%A3%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">协调子层 RS：成帧，也解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81%E4%BE%A7%E5%A6%82%E4%BD%95%E6%8A%8A%E6%8A%A5%E6%96%87%E6%89%93%E6%88%90%E5%B8%A7"><span class="toc-number">3.1.</span> <span class="toc-text">发送侧如何把报文打成帧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%A7%E9%87%8C%E7%9A%84-FCS-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">3.2.</span> <span class="toc-text">帧里的 FCS 是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%89%8D%E5%AF%BC%E7%A0%81%E5%8F%AF%E4%BB%A5%E8%A2%AB%E5%88%A0%E5%87%8F"><span class="toc-number">3.3.</span> <span class="toc-text">为什么前导码可以被删减</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E4%BE%A7%E5%A6%82%E4%BD%95%E4%BB%8E%E5%B8%A7%E9%87%8C%E6%8B%86%E5%87%BA%E6%8A%A5%E6%96%87"><span class="toc-number">3.4.</span> <span class="toc-text">接收侧如何从帧里拆出报文</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E3%80%81%E6%97%B6%E9%92%9F%E4%B8%8E%E7%94%B5%E6%B0%94"><span class="toc-number">3.5.</span> <span class="toc-text">信号、时钟与电气</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%8E%E5%8A%9F%E8%80%97%E7%A9%BA%E9%97%B2-LPI"><span class="toc-number">3.6.</span> <span class="toc-text">低功耗空闲 LPI</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PCS%EF%BC%9A%E4%BB%8E-GMII-%E5%AD%97%E8%8A%82%E5%88%B0%E7%BA%BF%E8%B7%AF%E7%A0%81%E7%BB%84"><span class="toc-number">4.</span> <span class="toc-text">PCS：从 GMII 字节到线路码组</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E4%B8%AA%E8%BF%87%E7%A8%8B%E6%80%8E%E4%B9%88%E9%85%8D%E5%90%88"><span class="toc-number">4.1.</span> <span class="toc-text">五个过程怎么配合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8B-10B-%E5%92%8C%E8%BF%90%E8%A1%8C%E5%B7%AE%E5%88%86"><span class="toc-number">4.2.</span> <span class="toc-text">8B&#x2F;10B 和运行差分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E9%80%81%EF%BC%9A%E5%85%88%E5%AE%9A%E6%9C%89%E5%BA%8F%E9%9B%86%EF%BC%8C%E5%86%8D%E5%AE%9A-10-bit"><span class="toc-number">4.3.</span> <span class="toc-text">发送：先定有序集，再定 10 bit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%EF%BC%9A%E5%85%88%E5%88%86%E5%8D%8F%E5%95%86%E5%8C%BA%EF%BC%8C%E5%86%8D%E6%8B%86%E6%95%B0%E6%8D%AE%E5%8C%85"><span class="toc-number">4.4.</span> <span class="toc-text">接收：先分协商区，再拆数据包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E6%97%B6%EF%BC%8CRx-%E4%BC%9A%E4%B8%8D%E4%BC%9A%E5%86%BB%E4%BD%8F%E5%A5%87%E5%81%B6%E5%92%8C-RD"><span class="toc-number">4.5.</span> <span class="toc-text">同步时，Rx 会不会冻住奇偶和 RD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PMA-%E8%A1%94%E6%8E%A5"><span class="toc-number">4.6.</span> <span class="toc-text">PMA 衔接</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8D%8F%E5%95%86%EF%BC%9A%E5%9C%A8-PCS-%E9%87%8C%EF%BC%8C%E4%B8%8D%E8%B5%B0-GMII-%E6%95%B0%E6%8D%AE%E8%84%9A"><span class="toc-number">5.</span> <span class="toc-text">自动协商：在 PCS 里，不走 GMII 数据脚</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C-PCS-%E6%80%8E%E4%B9%88%E4%BA%A4%E6%8E%A5"><span class="toc-number">5.1.</span> <span class="toc-text">和 PCS 怎么交接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E6%9C%BA%E6%80%8E%E4%B9%88%E8%B5%B0%E5%AE%8C"><span class="toc-number">5.2.</span> <span class="toc-text">状态机怎么走完</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Base-Page-%E5%92%8C%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">5.3.</span> <span class="toc-text">Base Page 和寄存器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E5%BB%B6%E4%B8%8E%E6%8E%92%E9%9A%9C%E9%A1%BA%E5%BA%8F"><span class="toc-number">6.</span> <span class="toc-text">时延与排障顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%97%B6%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88"><span class="toc-number">7.</span> <span class="toc-text">实现时要注意什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">8.</span> <span class="toc-text">常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">总结</span></a></li></ol>
+                </div>
+            </button>
+            
+
+            
+
+            <a href="#nexmoe-content" class="backtop toc-link" aria-label="Back To Top" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+        </div>
+    </div>
+</div></div><div id="nexmoe-footer"><!--!--></div><div id="nexmoe-search-space"><div class="search-container"><div class="search-header"><div class="search-input-container"><input class="search-input" type="text" placeholder="Search" onInput="sinput();"></div><a class="search-close" onclick="sclose();">×</a></div><div class="search-body"></div></div></div><div></div></body></html>
