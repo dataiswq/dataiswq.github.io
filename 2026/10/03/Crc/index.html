@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en"><head>
+<title>CRC——从 GF(2) 除法到并行电路 - BetterAndBetter</title>
+<meta charset="UTF-8">
+<meta name="keywords" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<meta name="description" content="从 GF(2) 上的多项式除法出发，说明 CRC 余数为什么落到移位和异或，生成多项式怎样决定检错能力，再把同一条递推写成串行触发器、工程参数和一拍多比特的并行电路。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CRC——从 GF(2) 除法到并行电路">
+<meta property="og:url" content="https://dataiswq.github.io/2026/10/03/Crc/index.html">
+<meta property="og:site_name" content="BetterAndBetter">
+<meta property="og:description" content="从 GF(2) 上的多项式除法出发，说明 CRC 余数为什么落到移位和异或，生成多项式怎样决定检错能力，再把同一条递推写成串行触发器、工程参数和一拍多比特的并行电路。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-10-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-02T16:00:00.000Z">
+<meta property="article:author" content="时间">
+<meta property="article:tag" content="CRC">
+<meta property="article:tag" content="FCS">
+<meta property="article:tag" content="GF(2)">
+<meta property="article:tag" content="并行电路">
+<meta name="twitter:card" content="summary">
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.css">
+<link rel="stylesheet" href="/lib/mdui_043tiny/mdui.css">
+
+
+<link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1791015912786">
+
+<link rel="stylesheet" href="/css/style.css?v=1791015912786">
+
+
+
+
+    
+        <link rel="stylesheet" href="/custom.css?v=1791015912786">
+    
+
+
+
+<script src="/lib/mdui_043tiny/mdui.js" async></script>
+<script src="/lib/fancybox/fancybox.umd.js" async></script>
+<script src="/lib/lax.min.js" async></script>
+
+
+<script async src="/js/app.js?v=1791015912786"></script>
+
+ 
+
+
+
+<link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+<meta name="generator" content="Hexo 8.1.2"></head><body class="nexmoe mdui-drawer-body-left"><div id="nexmoe-background"><div class="nexmoe-bg" style="background-image: url(/Picture/头像.jpg)"></div><div class="mdui-appbar mdui-shadow-0"><div class="mdui-toolbar"><a class="mdui-btn mdui-btn-icon mdui-ripple" mdui-drawer="{target: &#039;#drawer&#039;, swipe: true}" title="menu"><i class="mdui-icon nexmoefont icon-menu"></i></a><div class="mdui-toolbar-spacer"></div><a class="mdui-btn mdui-btn-icon" href="/" title="时间"><img src="/Picture/头像.jpg" alt="时间"></a></div></div></div><div id="nexmoe-header"><div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="时间">
+            <img src="/Picture/头像.jpg" alt="时间" alt="时间">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>6</div>
+        <div><span>Tags</span>15</div>
+        <div><span>Categories</span>5</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/" title="回到首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                回到首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple false" href="/archive.html" title="文章归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                文章归档
+            </div>
+        </a>
+        
+    </div>
+    
+    
+        
+        <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+         
+            <form id="search_form" action_e="https://cn.bing.com/search?q=site:nexmoe.com" onsubmit="return search();">
+                <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+            </form>
+         
+    </div>
+</div>
+
+
+
+
+    
+        
+        <div class="nexmoe-widget-wrap">
+	<div class="nexmoe-widget nexmoe-social">
+		<a
+			class="mdui-ripple"
+			href="https://dataiswq.github.io/"
+			target="_blank"
+			mdui-tooltip="{content: 'GitHub'}"
+			style="
+				color: rgb(25, 23, 23);
+				background-color: rgba(25, 23, 23, .1);
+			"
+		>
+			<i
+				class="nexmoefont icon-github"
+			></i> </a
+		>
+	</div>
+</div>
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Categories</h3>
+    <div class="nexmoe-widget">
+
+      <ul class="category-list">
+
+        
+
+
+        
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/以太网/">以太网</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/学习笔记/">学习笔记</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/学习计划/">学习计划</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/建立博客/">建立博客</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+
+        <li class="category-list-item">
+          <a class="category-list-link" href="/categories/编码/">编码</a>
+          <span class="category-list-count">1</span>
+        </li>
+
+        
+      </ul>
+
+    </div>
+  </div>
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/8B-10B/" style="font-size: 10px;">8B/10B</a> <a href="/tags/CRC/" style="font-size: 10px;">CRC</a> <a href="/tags/Ethernet/" style="font-size: 20px;">Ethernet</a> <a href="/tags/FCS/" style="font-size: 10px;">FCS</a> <a href="/tags/GF-2/" style="font-size: 10px;">GF(2)</a> <a href="/tags/GMII/" style="font-size: 10px;">GMII</a> <a href="/tags/GitHub-Pages/" style="font-size: 10px;">GitHub Pages</a> <a href="/tags/Hexo/" style="font-size: 10px;">Hexo</a> <a href="/tags/IEEE802-3/" style="font-size: 10px;">IEEE802.3</a> <a href="/tags/MAC/" style="font-size: 10px;">MAC</a> <a href="/tags/PCS/" style="font-size: 20px;">PCS</a> <a href="/tags/RTL/" style="font-size: 10px;">RTL</a> <a href="/tags/%E5%B9%B6%E8%A1%8C%E7%94%B5%E8%B7%AF/" style="font-size: 10px;">并行电路</a> <a href="/tags/%E8%87%AA%E5%8A%A8%E5%8D%8F%E5%95%86/" style="font-size: 10px;">自动协商</a> <a href="/tags/%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">记录</a>
+    </div>
+    
+      <script>
+        var maxTagcloud = parseInt(17);
+        var tags_length = parseInt(15);
+        var tags_arr = [];
+        for(var i = 0; i < tags_length; i++){
+          tags_arr.push(i);
+        }
+        tags_arr.sort(function (l, r) {
+          return Math.random() > 0.5 ? -1 : 1;
+        });
+        tags_arr = tags_arr.slice(0, maxTagcloud < tags_length ? tags_length - maxTagcloud : 0);
+        for(var tag_i = 0; tag_i < tags_arr.length; tag_i++){
+          document.getElementById("randomtagcloud").children[tags_arr[tag_i]].style.display = 'none';
+        }
+      </script>
+    
+  </div>
+
+    
+        
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/">2026</a><span class="archive-list-count">6</span></li></ul>
+    </div>
+  </div>
+
+
+
+    
+        
+        
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/10/03/Crc/">CRC——从 GF(2) 除法到并行电路</a>
+          </li>
+        
+          <li>
+            <a href="/2026/09/12/GmacAndPcs/">Gmac和对应Pcs简述</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/15/MacLayerReadLog/">IEEE 802.3 MAC 层学习笔记（阶段一）</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/12/EthernetLearnPlan/">1G/10G 以太网 MAC &amp; PCS 学习与 RTL 实践记录</a>
+          </li>
+        
+          <li>
+            <a href="/2026/06/11/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+   
+    <div class="nexmoe-copyright">
+        &copy; 2026 时间
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer --></div><div id="nexmoe-content"><div class="nexmoe-primary"><div class="nexmoe-post">
+  <article>
+    
+        <div class="nexmoe-post-cover absolute" style="padding-top: NaN%;"> 
+            <img src="/Picture/猫.png" alt="CRC——从 GF(2) 除法到并行电路" loading="lazy">
+            <h1>CRC——从 GF(2) 除法到并行电路</h1>
+        </div>
+    
+    
+    <div class="nexmoe-post-meta">
+    <div class="nexmoe-rainbow">
+        <a class="nexmoefont icon-calendar-fill">2026年10月03日</a>
+        
+            <a class="nexmoefont icon-appstore-fill -link" href="/categories/%E7%BC%96%E7%A0%81/">编码</a>
+        
+        
+    </div>
+    
+    
+    
+    
+    
+</div>
+
+    <h2 id="整体简述"><a href="#整体简述" class="headerlink" title="整体简述"></a>整体简述</h2><p>CRC 不是另一套和多项式无关的“按位累加”。它就是二元域上的除法取余：信息先左移，空出的低位放余数；线路上把这个余数接回帧尾，接收端用同一个除数再除一次。</p>
+<p>这份笔记把下面五件事接成一条计算：</p>
+<ol>
+<li>多项式除法为什么能变成移位和异或。</li>
+<li>生成多项式要具备什么性质，位宽变了以后式子怎么读。</li>
+<li>长除法的每一步怎样落到触发器上。</li>
+<li>初始值、输入反转、输出反转、结果异或各自改的是哪一段。</li>
+<li>多个比特要在一拍里算完时，组合逻辑从哪来。</li>
+</ol>
+<p>全文用同一个例子贯穿：生成多项式 (G(x)&#x3D;x^3+x+1)，信息比特 <code>1101</code>。需要看位宽时，再把同一套式子换成 32 位。以太网 FCS 用的 CRC-32 只在参数对照里出现，用来看 init、反转和 xorout 各改哪一列。</p>
+<p>先看域和定义，再写检错能力、串行电路、工程参数和并行展开。</p>
+<hr>
+<h2 id="计算发生在-GF-2-上"><a href="#计算发生在-GF-2-上" class="headerlink" title="计算发生在 GF(2) 上"></a>计算发生在 GF(2) 上</h2><p>CRC 的加减都在二元域 GF(2) 上。这个域里只有 0 和 1，和一根导线上的电平对应。</p>
+<p>加法和减法是同一个运算。把 1 加到某个比特上，该比特翻转；再加一次 1，又翻回去。减 1 也是翻转一次：</p>
+<p>$$<br>a+b&#x3D;a-b&#x3D;a\oplus b<br>$$</p>
+<p>没有进位，也没有借位。多比特数只是把这个规则按位用下去。例如</p>
+<p>$$<br>1011-1101&#x3D;1011\oplus 1101&#x3D;0110<br>$$</p>
+<p>多项式是给这些比特贴上位置的写法。(x^k) 表示这一位的权重是第 (k) 位，系数只取 0 或 1：</p>
+<p>$$<br>x^3+x+1 ;&#x3D;; 1011<br>$$</p>
+<p>最高次在左，常数项在右。两个多项式相加，就是对应系数异或。两个多项式相乘，就是移位后再按位异或：中间结果叠加时用异或。</p>
+<p>因此“多项式除法取余”落到电路上就是：寄存器左移，需要减去除数时按位异或。</p>
+<hr>
+<h2 id="CRC-在定义什么"><a href="#CRC-在定义什么" class="headerlink" title="CRC 在定义什么"></a>CRC 在定义什么</h2><p>设信息多项式为 (M(x))，CRC 宽度为 (n)，生成多项式为 (G(x))，且 (\deg G&#x3D;n)。</p>
+<p>发送端先把信息左移 (n) 位，空出的低 (n) 位用来放校验：</p>
+<p>$$<br>M(x),x^n &#x3D; Q(x),G(x)+R(x),\qquad \deg R&lt;n<br>$$</p>
+<p>(R(x)) 就是 CRC。发出去的码字是</p>
+<p>$$<br>T(x)&#x3D;M(x),x^n+R(x)<br>$$</p>
+<p>在 GF(2) 上加和减相同，所以</p>
+<p>$$<br>T(x)&#x3D;M(x),x^n+R(x)&#x3D;Q(x),G(x)<br>$$</p>
+<p>接收端对收到的字除以 (G(x))。没有差错时余数为 0。</p>
+<p>手算时有一条直接的停机条件：余数的次数必须低于除数。某一轮异或之后，当前窗口的次数已经小于 (n)，这个窗口里的比特就是余数。</p>
+<h3 id="手算：-G-x-x-3-x-1-，数据-1101"><a href="#手算：-G-x-x-3-x-1-，数据-1101" class="headerlink" title="手算：(G(x)&#x3D;x^3+x+1)，数据 1101"></a>手算：(G(x)&#x3D;x^3+x+1)，数据 <code>1101</code></h3><p>(n&#x3D;3)，(G) 的比特是 <code>1011</code>。信息 <code>1101</code> 左移 3 位得到被除数 <code>1101000</code>。每一轮看当前最高位：最高位为 1 就异或 <code>1011</code>，然后看下一档。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">被除数   1 1 0 1 0 0 0</span><br><span class="line">异或     1 0 1 1</span><br><span class="line">         ---------</span><br><span class="line">           1 1 0 0 0 0</span><br><span class="line">异或       1 0 1 1</span><br><span class="line">           ---------</span><br><span class="line">             1 1 1 0 0</span><br><span class="line">异或         1 0 1 1</span><br><span class="line">             ---------</span><br><span class="line">               1 0 1 0</span><br><span class="line">异或           1 0 1 1</span><br><span class="line">               -------</span><br><span class="line">                 0 0 1</span><br></pre></td></tr></table></figure>
+
+<p>余数 (R&#x3D;001)，也就是常数 1。发送码字是 <code>1101001</code>。</p>
+<p>接收端对 <code>1101001</code> 做同一套除法，四轮之后余数为 <code>000</code>，这帧通过检查。</p>
+<p>用多项式可以复核。(M(x)&#x3D;x^3+x^2+1)，商是 (x^3+x^2+x+1)：</p>
+<p>$$<br>(x^3+x+1)(x^3+x^2+x+1)+1&#x3D;x^6+x^5+x^3&#x3D;M(x),x^3<br>$$</p>
+<p>和长除法的余数 <code>001</code> 一致。</p>
+<hr>
+<h2 id="什么样的错误能被看出来"><a href="#什么样的错误能被看出来" class="headerlink" title="什么样的错误能被看出来"></a>什么样的错误能被看出来</h2><p>设线路上叠加的错误是 (E(x))，接收端实际拿到</p>
+<p>$$<br>T(x)+E(x)&#x3D;Q(x),G(x)+E(x)<br>$$</p>
+<p>再除以 (G(x))，余数就是 (E(x) \bmod G(x))。余数非 0，错误就被看见；余数为 0，这个 (E(x)) 恰好是 (G(x)) 的倍数，检查通过，错误漏掉。</p>
+<p>下面几条都从这个判据推出来。默认 (G(x)) 的常数项是 1，也就是 (G) 不能被 (x) 整除。工程上使用的 CRC 多项式都满足这一点，否则校验对“整体平移”会变钝。</p>
+<h3 id="单比特错误"><a href="#单比特错误" class="headerlink" title="单比特错误"></a>单比特错误</h3><p>单比特错误是 (E(x)&#x3D;x^i)。(G(x)) 至少有两个非零系数时，它不可能整除任何一个 (x^i)：(x^i) 只有一个非零项，而 (G) 的次数和项数都对不上。所以任意单比特错误的余数都不是 0。</p>
+<h3 id="长度不超过-CRC-宽度的突发"><a href="#长度不超过-CRC-宽度的突发" class="headerlink" title="长度不超过 CRC 宽度的突发"></a>长度不超过 CRC 宽度的突发</h3><p>把错误写成</p>
+<p>$$<br>E(x)&#x3D;x^m E_\ell(x)<br>$$</p>
+<p>其中 (E_\ell(x)) 的最低位是 1，(\deg E_\ell&lt;n)。突发的有效长度就是 (E_\ell) 所占的比特数，不超过 (n)。</p>
+<p>常数项为 1 的 (G(x)) 与 (x^m) 互素，所以 (G) 整除 (E) 当且仅当 (G) 整除 (E_\ell)。可是 (E_\ell) 的次数已经小于 (n)，又不是 0，(G) 除它必然留下它自己。因此这种突发一定被发现。</p>
+<p>直观说法：错误图案比除数短，长除法做不到“刚好除尽”，余数就是这个错误图案本身（再被 (x^m) 转一圈）。</p>
+<h3 id="奇数个错误"><a href="#奇数个错误" class="headerlink" title="奇数个错误"></a>奇数个错误</h3><p>若 (G(x)) 含有因式 (x+1)，则任意奇数个错误都能被发现。</p>
+<p>在 GF(2) 里把 (x&#x3D;1) 代入，得到的是全部系数之和，也就是错误比特数的奇偶：</p>
+<p>$$<br>E(1)&#x3D;\bigoplus_i e_i<br>$$</p>
+<p>奇数个 1 时 (E(1)&#x3D;1)，偶数个 1 时 (E(1)&#x3D;0)。而 (x+1) 整除 (E(x)) 的充要条件正是 (E(1)&#x3D;0)。(G) 已经带有 (x+1)，它的倍数也必须满足 (E(1)&#x3D;0)。奇数重量的 (E) 不在这个集合里，余数不可能是 0。</p>
+<p>(x+1) 的比特是 <code>11</code>。它像一把宽度为 2 的梳子：一个多项式是 <code>11</code> 的倍数时，相邻位异或着扫过去，总和必须是偶数。这就是上面代入 (x&#x3D;1) 的电路版。</p>
+<h3 id="还是会漏掉的错误"><a href="#还是会漏掉的错误" class="headerlink" title="还是会漏掉的错误"></a>还是会漏掉的错误</h3><p>漏检的充分必要条件始终是：(E(x)) 等于 (G(x)) 乘上某个多项式。两条直接的推论：</p>
+<ul>
+<li>错误图案恰好等于 (G) 本身，或者等于 (G) 的任意移位叠加，检查结果仍是 0。</li>
+<li>突发长于 (n) 时，(E_\ell) 的次数可以不低于 (n)，存在非零的 (E_\ell) 被 (G) 整除。长度恰好为 (n+1) 的突发里，大约 (2^{-(n-1)}) 的比例会漏掉；更长的突发大约有 (2^{-n}) 的比例漏掉。这是随机图案下的比例，用来比较多项式，不保证某一个具体错误一定落在哪一边。</li>
+</ul>
+<p>双比特错误 (E(x)&#x3D;x^i+x^j&#x3D;x^i(x^{j-i}+1)) 能否被发现，取决于 (x^k+1) 会不会被 (G) 整除。若 (G) 含有一个 (n) 次本原多项式因子，则 (x^k+1) 在 (k&lt;2^n-1) 时都不会被这个因子整除。帧长限制在这个范围里时，所有双比特错误都能被发现。</p>
+<h3 id="生成多项式要同时拿到哪些能力"><a href="#生成多项式要同时拿到哪些能力" class="headerlink" title="生成多项式要同时拿到哪些能力"></a>生成多项式要同时拿到哪些能力</h3><p>除数要满足的条件，就是把上一节的检错能力尽量同时拿到：</p>
+<table>
+<thead>
+<tr>
+<th>要求</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>次数恰好是 (n)</td>
+<td>CRC 位宽是 (n)，余数占满这 (n) 位</td>
+</tr>
+<tr>
+<td>常数项为 1</td>
+<td>不被 (x) 整除，短突发的移位不会把错误消掉</td>
+</tr>
+<tr>
+<td>至少两项</td>
+<td>所有单比特错误可见</td>
+</tr>
+<tr>
+<td>含有因式 (x+1)</td>
+<td>所有奇数个错误可见</td>
+</tr>
+<tr>
+<td>含有 (n) 次本原因子</td>
+<td>在长度 (&lt;2^n-1) 的帧里，所有双比特错误可见</td>
+</tr>
+<tr>
+<td>项数和系数经过筛选</td>
+<td>把长突发、多比特错误的漏检比例压到接近 (2^{-n})</td>
+</tr>
+</tbody></table>
+<p>(n) 变大时，过程没有换成另一种算法。变化的只有三件事：余数寄存器从 (n) 位变成新的宽度，(x^n \equiv G(x)+x^n) 里右边多出来的那些项换成新多项式的低次项，一拍能吞进去的数据比特数单独由并行度决定。检错能力随 (n) 变强，是因为“错误必须正好是 (G) 的倍数”这个格子变稀了。</p>
+<p>一个多项式可以在“奇数错误”和“双比特距离”之间做取舍。项数为偶数时 (G(1)&#x3D;0)，必然含有 (x+1)，奇数错误都能看见。IEEE CRC-32 常用的 <code>0x04C11DB7</code> 是本原多项式，双比特保护拉到很长，但它的项数是奇数，(G(1)&#x3D;1)，并不承诺抓住每一个奇数错误。后面电路例子里用的</p>
+<p>$$<br>G_{32}(x)&#x3D;x^{32}+x^{16}+x^7+1<br>$$</p>
+<p>是为了把抽头写清楚，它不是 IEEE CRC-32。它有 4 个非零项，(G(1)&#x3D;0)，所以含有 (x+1)。</p>
+<hr>
+<h2 id="从长除法到移位寄存器"><a href="#从长除法到移位寄存器" class="headerlink" title="从长除法到移位寄存器"></a>从长除法到移位寄存器</h2><p>长除法的每一步都是同一句话：</p>
+<blockquote>
+<p>当前余数乘 (x)（左移一位），加上新进来的那一个比特，再减去 (G(x)) 的若干倍，把次数压回 (n) 以下。</p>
+</blockquote>
+<p>减 (G) 的条件是移位后出现了 (x^n) 项。GF(2) 里“减去”就是异或，所以电路是移位寄存器加上若干个异或抽头。抽头的位置就是 (G(x)) 里系数为 1 的那些次。</p>
+<p>下面两套电路算的是同一个 (R(x))。差别在于 (x^n) 这一下乘法放在什么时候做。</p>
+<h3 id="补零形式：先吃数据，再移入-n-个-0"><a href="#补零形式：先吃数据，再移入-n-个-0" class="headerlink" title="补零形式：先吃数据，再移入 (n) 个 0"></a>补零形式：先吃数据，再移入 (n) 个 0</h3><p>寄存器 (F_2,F_1,F_0) 保存当前余数</p>
+<p>$$<br>R(x)&#x3D;F_2 x^2+F_1 x+F_0<br>$$</p>
+<p>数据比特 (d) 从最低位进入，最高位 (F_2) 移出时作为反馈：</p>
+<p>$$<br>\begin{aligned}<br>f &amp;&#x3D; F_2 \<br>F_2’ &amp;&#x3D; F_1 \<br>F_1’ &amp;&#x3D; F_0 \oplus f \<br>F_0’ &amp;&#x3D; d \oplus f<br>\end{aligned}<br>$$</p>
+<p>(f&#x3D;1) 时异或进去的低位图案是 <code>011</code>，正好是 (x^3+x+1) 去掉 (x^3) 之后剩下的 (x+1)。(x^2) 的系数是 0，所以 (F_2) 那一级没有额外异或，只接收 (F_1) 移上来的值。</p>
+<p>这套递推算的是</p>
+<p>$$<br>R’(x)&#x3D;\left(x,R(x)+d\right)\bmod G(x)<br>$$</p>
+<p>数据比特按从高到低的顺序全部进入之后，寄存器里是 (M(x) \bmod G(x))，还差定义里的那个 (x^n)。再连续送入 (n) 个 0，每送一个 0 就乘一次 (x)。三个 0 送完，寄存器变成 (M(x),x^n \bmod G(x))，这才是 CRC。</p>
+<p>用 <code>1101</code> 走一遍。初值全 0：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>输入</th>
+<th>(f&#x3D;F_2)</th>
+<th>下一状态 (F_2 F_1 F_0)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td><code>001</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td><code>011</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+<td><code>110</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td><code>110</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td><code>111</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td><code>101</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>1</td>
+<td><code>001</code></td>
+</tr>
+</tbody></table>
+<p>前 4 拍结束时是 <code>110</code>，等于 ((x^3+x^2+1) \bmod (x^3+x+1)&#x3D;x^2+x)。再补 3 个 0 之后得到 <code>001</code>，与手算一致。</p>
+<p>把 3 次补零展开，可以得到不依赖中间拍的组合公式。令补零前的状态为 (F_2,F_1,F_0)，每拍 (d&#x3D;0)：</p>
+<p>$$<br>\begin{aligned}<br>F_2’&amp;&#x3D;F_1,&amp; F_1’&amp;&#x3D;F_0\oplus F_2,&amp; F_0’&amp;&#x3D;F_2 \<br>F_2’’&amp;&#x3D;F_0\oplus F_2,&amp; F_1’’&amp;&#x3D;F_1\oplus F_2,&amp; F_0’’&amp;&#x3D;F_1 \<br>F_2’’’&amp;&#x3D;F_1\oplus F_2,&amp; F_1’’’&amp;&#x3D;F_0\oplus F_1\oplus F_2,&amp; F_0’’’&amp;&#x3D;F_0\oplus F_2<br>\end{aligned}<br>$$</p>
+<p>代回 <code>110</code>：(F_2’’’&#x3D;0)，(F_1’’’&#x3D;0)，(F_0’’’&#x3D;1)。</p>
+<p>这一步的含义是：固定次数的移位和异或，最终是输入比特的线性组合。次数一旦固定，就可以做成查找表，或者做成纯组合逻辑。宽度变大以后，(2^n) 深度的整表放不下，所以改成按字节建表，或者用后面的矩阵把任意步数一次乘出来。</p>
+<h3 id="直接形式：每个数据位进入时已经乘过-x-n"><a href="#直接形式：每个数据位进入时已经乘过-x-n" class="headerlink" title="直接形式：每个数据位进入时已经乘过 (x^n)"></a>直接形式：每个数据位进入时已经乘过 (x^n)</h3><p>定义要求的是 (M(x),x^n \bmod G(x))。设旧余数已经满足</p>
+<p>$$<br>R(x)&#x3D;P(x),x^n \bmod G(x)<br>$$</p>
+<p>新比特 (d) 接在 (P(x)) 后面，新信息是 (P(x),x+d)。新余数是</p>
+<p>$$<br>\begin{aligned}<br>R’(x)<br>&amp;&#x3D; \left((P(x),x+d),x^n\right)\bmod G(x) \<br>&amp;&#x3D; \left(x,R(x)+d,x^n\right)\bmod G(x)<br>\end{aligned}<br>$$</p>
+<p>对 (G(x)&#x3D;x^3+x+1)，用关系 (x^3&#x3D;x+1)：</p>
+<p>$$<br>\begin{aligned}<br>R’(x)<br>&amp;&#x3D; x(F_2 x^2+F_1 x+F_0)+d(x+1) \<br>&amp;&#x3D; F_1 x^2+(F_0\oplus d\oplus F_2),x+(F_2\oplus d)<br>\end{aligned}<br>$$</p>
+<p>对照系数：</p>
+<p>$$<br>\begin{aligned}<br>f &amp;&#x3D; F_2\oplus d \<br>F_2’ &amp;&#x3D; F_1 \<br>F_1’ &amp;&#x3D; F_0\oplus f \<br>F_0’ &amp;&#x3D; f<br>\end{aligned}<br>$$</p>
+<p>数据结束后不需要再补 0。寄存器里已经是 CRC。仍用 <code>1101</code>，初值 0：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>(d)</th>
+<th>(f&#x3D;F_2\oplus d)</th>
+<th>下一状态 (F_2 F_1 F_0)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td><code>011</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td><code>101</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>0</td>
+<td>1</td>
+<td><code>001</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td><code>001</code></td>
+</tr>
+</tbody></table>
+<p>结果同样是 <code>001</code>。</p>
+<p>和补零形式相比，数据比特的注入点从 (x^0) 挪到了 (x^n)。因为 (x^n) 立刻被 (G(x)) 化简，(d) 和原来的最高位一起，异或进每一个生成多项式系数为 1 的位置。</p>
+<p>电路就是这条递推。反馈 (f&#x3D;F_2\oplus d) 送入 (F_0)，并异或到 (F_0) 移向 (F_1) 的路径上；(F_1) 原样移入 (F_2)：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">                f = F2 ⊕ d</span><br><span class="line">       ┌──────────┬──────────────┐</span><br><span class="line">       │          │              │</span><br><span class="line">       v          v              │</span><br><span class="line">d ──► XOR ──► [F0] ──► XOR ──► [F1] ──► [F2]</span><br><span class="line">       ^                   ^              │</span><br><span class="line">       │                   │              │</span><br><span class="line">       └───────────────────┴──────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="多项式系数就是抽头位置"><a href="#多项式系数就是抽头位置" class="headerlink" title="多项式系数就是抽头位置"></a>多项式系数就是抽头位置</h3><p>把上面的次数换成任意 (n)。直接形式、高位先入时，一次更新是</p>
+<p>$$<br>R’(x)&#x3D;\left(x,R(x)+d,x^n\right)\bmod G(x)<br>$$</p>
+<p>设</p>
+<p>$$<br>G(x)&#x3D;x^n+g_{n-1}x^{n-1}+\cdots+g_1 x+g_0<br>$$</p>
+<p>则 (x^n&#x3D;g_{n-1}x^{n-1}+\cdots+g_0)，反馈</p>
+<p>$$<br>f&#x3D;F_{n-1}\oplus d<br>$$</p>
+<p>新状态为</p>
+<p>$$<br>\begin{aligned}<br>F_{n-1}’ &amp;&#x3D; F_{n-2} \<br>F_k’ &amp;&#x3D; F_{k-1}\oplus (g_k\cdot f), \qquad 1\le k\le n-1 \<br>F_0’ &amp;&#x3D; g_0\cdot f<br>\end{aligned}<br>$$</p>
+<p>(g_k&#x3D;1) 的那一位在移入时多一个异或，(g_k&#x3D;0) 的那一位只移位。生成多项式写成 1 的那些次，就是反馈异或落进去的寄存器位。最高次 (x^n) 不占寄存器，它被化简掉，只用来产生 (f)。</p>
+<h3 id="位宽变成-32-时，式子只是换了-n"><a href="#位宽变成-32-时，式子只是换了-n" class="headerlink" title="位宽变成 32 时，式子只是换了 (n)"></a>位宽变成 32 时，式子只是换了 (n)</h3><p>取 (G(x)&#x3D;x^{32}+x^{16}+x^7+1)。当前余数是 32 个系数 (F_{31}\ldots F_0)。高位先入、直接形式，送入一个比特 (d)，记 (f&#x3D;F_{31}\oplus d)。由 (x^{32}&#x3D;x^{16}+x^7+1)，32 个触发器的下一拍是：</p>
+<p>$$<br>\begin{aligned}<br>F_{31}’ &amp;&#x3D; F_{30} \<br>F_{16}’ &amp;&#x3D; F_{15}\oplus f \<br>F_7’ &amp;&#x3D; F_6\oplus f \<br>F_0’ &amp;&#x3D; f \<br>F_k’ &amp;&#x3D; F_{k-1} \quad (k\notin{0,7,16})<br>\end{aligned}<br>$$</p>
+<p>其余位都是纯移位。CRC 从 3 位换成 32 位，没有新的原理：寄存器加长，反馈仍由最高位和输入比特异或得到，抽头仍抄多项式。若改用补零形式，则 (d) 进入 (F_0)，(f) 只取 (F_{31})，数据结束后再空移 32 拍。</p>
+<p>两套形式可以对照着记：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>补零形式</th>
+<th>直接形式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据注入点</td>
+<td>最低位 (F_0)</td>
+<td>与最高位一起形成 (f)</td>
+</tr>
+<tr>
+<td>反馈</td>
+<td>(f&#x3D;F_{n-1})</td>
+<td>(f&#x3D;F_{n-1}\oplus d)</td>
+</tr>
+<tr>
+<td>数据结束后</td>
+<td>再送 (n) 个 0</td>
+<td>寄存器里已经是 CRC</td>
+</tr>
+<tr>
+<td>算的余数</td>
+<td>都是 (M(x),x^n \bmod G(x))</td>
+<td>同左</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="初始值、反转和结果异或"><a href="#初始值、反转和结果异或" class="headerlink" title="初始值、反转和结果异或"></a>初始值、反转和结果异或</h2><p>到这里为止，多项式和“每拍几比特”已经能决定递推。工程里的 CRC 参数还要再改四个地方。它们都不改变 (G(x))，只改变送入递推之前、以及读出余数之后的比特。</p>
+<p>常用参数可以记成一张表。CRC-32&#x2F;ISO-HDLC 那一行是以太网 FCS 的参数，用来对照各列在改什么。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用位置</th>
+<th>改的是什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>width</td>
+<td>余数次数</td>
+<td>(n&#x3D;\deg G)，寄存器宽度</td>
+</tr>
+<tr>
+<td>poly</td>
+<td>除数</td>
+<td>抽头位置</td>
+</tr>
+<tr>
+<td>init</td>
+<td>第一拍之前的寄存器</td>
+<td>把全 0 初值换成预设值</td>
+</tr>
+<tr>
+<td>refin</td>
+<td>每个输入字节进入递推之前</td>
+<td>字节内比特顺序反过来，低位先入</td>
+</tr>
+<tr>
+<td>refout</td>
+<td>余数读出之后、xorout 之前</td>
+<td>把 (n) 位余数的比特顺序反过来</td>
+</tr>
+<tr>
+<td>xorout</td>
+<td>最终输出</td>
+<td>余数再异或一个常数</td>
+</tr>
+</tbody></table>
+<h3 id="初始值"><a href="#初始值" class="headerlink" title="初始值"></a>初始值</h3><p>init 是寄存器的预置值，不是多项式的一部分。</p>
+<p>init 为 0 时，信息前面的任意多个 0 不改变余数：补零形式里它们只是在乘 (x) 之后仍然得到 0，直接形式里 (d&#x3D;0) 且状态为 0 时反馈也是 0。于是全 0 帧的 CRC 是 0，帧头少一截前导 0 也不会被这套校验单独看出来。</p>
+<p>init 取全 1 时，第一拍的反馈里就已经混进了这些 1。前面的 0 不再是“什么都没发生”，不同长度的前导 0 会得到不同余数。以太网 FCS 使用的 CRC-32 把 init 设为 <code>0xFFFFFFFF</code>，就是为了让这种全 0 前缀参与运算。</p>
+<p>从多项式看，非零初值等价于在真正的信息前面先送进一段由 init 决定的固定比特，这段比特也参与同一次除法。实现时不必真的多送那些比特，把寄存器预置成 init 即可。</p>
+<h3 id="输入反转-refin"><a href="#输入反转-refin" class="headerlink" title="输入反转 refin"></a>输入反转 refin</h3><p>递推本身要规定比特的先后。直接形式按高位先入：一个字节先送 bit7。</p>
+<p>refin 为真时，每个输入字节在进入这套递推之前先做比特反转，变成低位先入。反转的范围是字节内部，整帧的字节顺序保持原样。串行链路、很多软件表驱动实现都按低位先处理，硬件若按字节拼接，就要和这个顺序对齐。</p>
+<p>refin 会改变“哪一个数据比特落在 (x) 的哪一次上”。同一帧、同一个 (G(x))，refin 不同，余数不同。它决定的是 (M(x)) 的系数怎么编号。</p>
+<h3 id="输出反转-refout"><a href="#输出反转-refout" class="headerlink" title="输出反转 refout"></a>输出反转 refout</h3><p>refout 为真时，把寄存器从 (F_{n-1}\ldots F_0) 读成 (F_0\ldots F_{n-1})，再去做 xorout。</p>
+<p>它和 refin 通常成对出现：输入按低位先入，输出也按同一套比特权重解释，接收端用相同参数重算才能得到约定的校验值。只反转其中一侧，相当于收发两端对“哪一位是 (x^{n-1})”的约定不一致。</p>
+<h3 id="结果异或-xorout"><a href="#结果异或-xorout" class="headerlink" title="结果异或 xorout"></a>结果异或 xorout</h3><p>xorout 是输出前最后异或的掩码。它发生在 refout 之后。</p>
+<p>xorout 为 0 时，接收端把“信息比特接上 CRC 比特”再跑一遍同一电路，余数是 0，这就是定义那一节的结论。</p>
+<p>xorout 为全 1，或为别的非零常数时，线上发送的那 (n) 位已经不是数学余数 (R(x))，而是 (R(x)) 异或这个常数。接收端把“信息接上这 (n) 位”再送进同一套参数，得到的不再是 0，而是一个只由 init、refin、refout、xorout 决定的常数，一般叫 residue。校验方法变成“重算结果等于这个常数”。</p>
+<p>以太网 FCS 用的 CRC-32（init 与 xorout 都是 <code>0xFFFFFFFF</code>，refin 与 refout 都为真）就是这种情形。按低字节在前把 FCS 接回帧尾，再用同一套参数重算，正确帧得到 <code>0x2144DF1C</code>。高位先入、寄存器按比特反转之前读出的那种实现，文献里常把对应常数写成 <code>0xC704DD7B</code>。它是 <code>0x2144DF1C</code> 取反后再做 32 位比特反转，两套数字描述的是同一次“非零余数”，差在读寄存器的方向。</p>
+<p>xorout 也让全 0 信息的发送结果不再全 0。它和 init 解决的是相邻的两件事：init 让前导 0 进入除法，xorout 让最后打印出来的校验位再翻一次。</p>
+<h3 id="数据位宽和-CRC-位宽不是同一个数"><a href="#数据位宽和-CRC-位宽不是同一个数" class="headerlink" title="数据位宽和 CRC 位宽不是同一个数"></a>数据位宽和 CRC 位宽不是同一个数</h3><p>CRC 位宽 (n) 是 (G(x)) 的次数，也是最终校验位的个数。数据位宽 (m) 是一拍并行送入的信息比特数。</p>
+<p>同一个多项式、不同的 (m)，串行定义完全一样，变的是一拍内部要把串行递推展开 (m) 次。(m&#x3D;1) 就是上面的电路；(m&#x3D;8) 是字节电路；(m&#x3D;32) 是一个 32 比特异或网络。</p>
+<hr>
+<h2 id="一拍送入多个比特"><a href="#一拍送入多个比特" class="headerlink" title="一拍送入多个比特"></a>一拍送入多个比特</h2><p>并行的目标是：寄存器当前值是 (S)，这一拍同时来了 (m) 个数据比特，下一拍直接得到连续做 (m) 次串行更新之后的状态。中间那些拍不需要真的发生。</p>
+<h3 id="把一拍写成矩阵"><a href="#把一拍写成矩阵" class="headerlink" title="把一拍写成矩阵"></a>把一拍写成矩阵</h3><p>直接形式的单比特更新对状态和输入都是异或线性的，可以写成</p>
+<p>$$<br>S’&#x3D;AS\oplus Bd<br>$$</p>
+<p>仍用 (G(x)&#x3D;x^3+x+1) 的直接形式。状态列向量取 (S&#x3D;(F_2,F_1,F_0)^\top)，则</p>
+<p>$$<br>F_2’&#x3D;F_1,\qquad F_1’&#x3D;F_2\oplus F_0\oplus d,\qquad F_0’&#x3D;F_2\oplus d<br>$$</p>
+<p>对应</p>
+<p>$$<br>A&#x3D;<br>\begin{bmatrix}<br>0 &amp; 1 &amp; 0 \<br>1 &amp; 0 &amp; 1 \<br>1 &amp; 0 &amp; 0<br>\end{bmatrix}<br>,\qquad<br>B&#x3D;<br>\begin{bmatrix}<br>0 \ 1 \ 1<br>\end{bmatrix}<br>$$</p>
+<p>(A) 描述“输入比特先当成 0，状态自己转移”；(B) 描述“这一个数据比特加到哪几位上”。GF(2) 上的矩阵乘法，乘是与，加是异或。</p>
+<p>连续三拍，输入依次是 (d_0,d_1,d_2)（(d_0) 先进入），展开后是</p>
+<p>$$<br>S_3 &#x3D; A^3 S_0 \oplus A^2 B d_0 \oplus A B d_1 \oplus B d_2<br>$$</p>
+<p>写成 (m) 拍就是</p>
+<p>$$<br>S_m&#x3D;A^m S_0\oplus A^{m-1}Bd_0\oplus A^{m-2}Bd_1\oplus\cdots\oplus Bd_{m-1}<br>$$</p>
+<p>(A^m) 的第 (i) 行说明：下一状态的第 (i) 位由旧状态的哪些位异或而来。后面每一项 (A^{m-1-j}B) 的第 (i) 行说明：数据比特 (d_j) 会不会异或进第 (i) 位。行里是 1 的列就是这个输出位的异或输入。把 (m) 固定，这就是一拍并行电路的全部组合逻辑。</p>
+<h3 id="用线性叠加把每一行测出来"><a href="#用线性叠加把每一行测出来" class="headerlink" title="用线性叠加把每一行测出来"></a>用线性叠加把每一行测出来</h3><p>GF(2) 线性意味着可以逐个比特试，再把结果异或起来，不必先手写 (A^m)。</p>
+<ul>
+<li>状态清零，数据里只把第 (j) 位设成 1，跑 (m) 步串行递推。最终寄存器里为 1 的那些位，就是 (d_j) 的贡献。</li>
+<li>数据清零，初始状态里只把第 (k) 位设成 1，再跑 (m) 步。最终为 1 的那些位，就是旧状态 (F_k) 的贡献。</li>
+</ul>
+<p>每个数据位、每个状态位各做一次，(m+n) 次仿真之后，并行方程就齐了。这个办法适合用程序生成 RTL：生成器和串行黄金模型用的是同一条递推，并行网表只是把测到的 1 收成异或树。</p>
+<h3 id="多项式分块：旧余数平移，新数据另算，再相加"><a href="#多项式分块：旧余数平移，新数据另算，再相加" class="headerlink" title="多项式分块：旧余数平移，新数据另算，再相加"></a>多项式分块：旧余数平移，新数据另算，再相加</h3><p>矩阵把同一件事写成了线性代数。用多项式看，分块点更明显。已经处理完的信息是 (P(x))，直接形式下旧余数是 (P(x),x^n \bmod G(x))。新来的 (m) 比特写成次数小于 (m) 的 (D(x))，接在后面：</p>
+<p>$$<br>\begin{aligned}<br>R_{\mathrm{new}}(x)<br>&amp;&#x3D; \left(R_{\mathrm{old}}(x),x^m \bmod G(x)\right)<br>  \oplus<br>  \left(D(x),x^n \bmod G(x)\right)<br>\end{aligned}<br>$$</p>
+<p>两项可以分开算：</p>
+<ol>
+<li><strong>状态项</strong> (R_{\mathrm{old}},x^m \bmod G)。把旧余数乘 (x^m)，再用 (x^n&#x3D;G(x)+x^n) 不断降次，直到次数小于 (n)。它就是矩阵里的 (A^m S)。</li>
+<li><strong>数据项</strong> (D(x),x^n \bmod G)。(D(x)) 的每一位单独乘 (x^n) 再取余，得到的 (n) 位图案按该位为 1 的那些项异或。它就是 (\sum_j A^{m-1-j}Bd_j)。</li>
+</ol>
+<p>降次的具体做法是反复乘 (x)。对 (G(x)&#x3D;x^3+x+1)：</p>
+<p>$$<br>\begin{aligned}<br>x^3 &amp;\equiv x+1 \<br>x^4 &amp;\equiv x^2+x \<br>x^5 &amp;\equiv x^2+x+1 \<br>x^6 &amp;\equiv x^2+1<br>\end{aligned}<br>$$</p>
+<p>例如一拍送入 4 比特，状态项就是把旧余数乘 (x^4)，把其中的 (x^3) 及以上全部换成上表。数据项则是各个 (d_j x^j \cdot x^3) 各自取余后异或。两条路径都只剩下 3 位，再异或，就是新 CRC。</p>
+<h3 id="宽数据拆开再流水"><a href="#宽数据拆开再流水" class="headerlink" title="宽数据拆开再流水"></a>宽数据拆开再流水</h3><p>上面的加法可以继续拆。把 (m) 比特分成高 (m_1) 位 (D_h(x)) 和低 (m_0) 位 (D_\ell(x))：</p>
+<p>$$<br>R_{\mathrm{new}}<br>&#x3D;\left(\left(R_{\mathrm{old}},x^{m_1}+D_h,x^n\right)\bmod G\right),x^{m_0}<br>\oplus<br>\left(D_\ell,x^n\bmod G\right)<br>$$</p>
+<p>前半拍处理高位块，得到一个中间余数；后半拍把这个中间余数再乘 (x^{m_0})，并异或上低位块自己的 CRC 贡献。中间余数可以打一拍寄存器，组合逻辑深度就从“(m) 位一次异或”变成“两级较窄的异或”。拆成更多块时同样做，每一块只依赖上一块的 (n) 位余数和自己的数据。</p>
+<p>生成这种电路时，每一块内部仍用矩阵或逐比特探测。串行递推保持为唯一的功能定义，并行和流水只改变一拍内完成多少次递推。</p>
+<hr>
+<h2 id="把参数接成一次计算"><a href="#把参数接成一次计算" class="headerlink" title="把参数接成一次计算"></a>把参数接成一次计算</h2><p>整条链路按数据走过的顺序只有五步。核对实现时按这个顺序走，不要先对最终打印值。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">字节 ──refin──► 比特流 d0,d1,…</span><br><span class="line">                  │</span><br><span class="line">寄存器装入 init ──┤</span><br><span class="line">                  ▼</span><br><span class="line">        直接形式递推（1 位或 m 位）</span><br><span class="line">                  │</span><br><span class="line">                  ▼</span><br><span class="line">        refout（可选，颠倒 n 位）</span><br><span class="line">                  │</span><br><span class="line">                  ▼</span><br><span class="line">        异或 xorout ──► 发送出去的 CRC</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>按 refin 决定每个输入字节的比特顺序，得到串行比特流 (d_0,d_1,\ldots)。高位先入时 (d_0) 是多项式的最高次系数。</li>
+<li>寄存器装入 init。</li>
+<li>对比特流使用直接形式递推。一拍只进 1 位，就是串行电路；一拍进 (m) 位，就是上一节的 (S_m)。补零形式则在这串比特后面再接 (n) 个 0，数据比特改从最低位注入。</li>
+<li>比特流结束后，按 refout 决定是否颠倒 (n) 位余数。</li>
+<li>异或 xorout，得到发送出去的 CRC 位。</li>
+</ol>
+<p>接收端用同一组参数重算。xorout 为 0、且收发的比特顺序一致时，把 CRC 位接在信息后面再算，余数为 0。xorout 非零时，改为比较那个固定 residue。CRC-32 在低字节在前的接法下，这个常数是 <code>0x2144DF1C</code>。</p>
+<p>位宽变化时只改第 3 步的展开次数和寄存器个数：(n) 决定 (G(x)) 的次数和余数宽度，(m) 决定矩阵乘的是 (A^m) 还是 (A^1)。多项式决定抽头，init、refin、refout、xorout 决定进入抽头之前和离开寄存器之后的比特。</p>
+<p>建议按这个顺序核对一帧：</p>
+<table>
+<thead>
+<tr>
+<th>顺序</th>
+<th>核对什么</th>
+<th>对上才继续</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>(G(x)) 的次数、常数项、抽头</td>
+<td>寄存器宽度和异或位置与多项式一致</td>
+</tr>
+<tr>
+<td>2</td>
+<td>比特进入顺序</td>
+<td>refin 只翻字节内，高位先入或低位先入与对端相同</td>
+</tr>
+<tr>
+<td>3</td>
+<td>init</td>
+<td>第一拍之前的寄存器是约定值</td>
+</tr>
+<tr>
+<td>4</td>
+<td>串行黄金模型</td>
+<td>同一递推逐位跑完，得到数学余数</td>
+</tr>
+<tr>
+<td>5</td>
+<td>refout、xorout</td>
+<td>线上的 (n) 位是余数经过这两步之后的值</td>
+</tr>
+<tr>
+<td>6</td>
+<td>接收重算</td>
+<td>xorout 为 0 时期望余数 0；否则期望 residue</td>
+</tr>
+</tbody></table>
+<p>并行网表和这张表冲突时，以串行递推为准。</p>
+<hr>
+<h2 id="实现时要注意什么"><a href="#实现时要注意什么" class="headerlink" title="实现时要注意什么"></a>实现时要注意什么</h2><p>逻辑上：</p>
+<ul>
+<li>功能定义只有一条：直接形式是 (R’(x)&#x3D;(x,R(x)+d,x^n)\bmod G(x))，补零形式是先算 (M(x)\bmod G(x)) 再乘 (n) 次 (x)。两套电路必须得到同一个余数。</li>
+<li>抽头只抄 (G(x)) 里系数为 1 的次。(x^n) 不占寄存器，它只产生反馈 (f)。</li>
+<li>(n) 和 (m) 分开记。换并行度只展开递推，不换多项式。</li>
+<li>init、refin、refout、xorout 都不改 (G(x))。少做其中一步，余数会整段对不上。</li>
+<li>教学用的 (x^{32}+x^{16}+x^7+1) 用来看抽头。以太网 FCS 用 CRC-32&#x2F;ISO-HDLC：多项式 <code>0x04C11DB7</code>，init 与 xorout 都是 <code>0xFFFFFFFF</code>，refin 与 refout 都为真，低字节在前重算的 residue 是 <code>0x2144DF1C</code>。</li>
+<li>并行和流水的每一块都从同一条串行递推生成。逐比特探测做完 (m+n) 次，再收成异或树。</li>
+</ul>
+<p>硬件上：宽数据先按块拆开，块与块之间只传递 (n) 位中间余数；组合逻辑深度按块宽估，不按整拍 (m) 估。对拍时覆盖全 0 信息、前导 0、单比特翻转、长度不超过 (n) 的突发，以及“信息接上 CRC 再算”得到的 0 或 residue。</p>
+<hr>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><p><strong>Q：CRC 是不是把各字节加起来再取补？</strong><br>A：它是 GF(2) 上的多项式除法余数。加减都是异或，没有进位。发出去的码字在没有 xorout 时能被 (G(x)) 整除。</p>
+<p><strong>Q：余数为 0 是不是说明这一帧一定没有差错？</strong><br>A：无差错时余数是 0。余数也是 0 的另一种情况是错误多项式恰好等于 (G(x)) 的某个倍数，这种错误会漏检。</p>
+<p><strong>Q：补零形式和直接形式为什么能得到同一个 <code>001</code>？</strong><br>A：两者都在算 (M(x),x^n \bmod G(x))。补零形式在数据结束后再送 (n) 个 0 来完成这 (n) 次乘 (x)；直接形式在每个数据位进入时就用 (x^n\equiv G(x)+x^n) 把这一次乘法化简掉。</p>
+<p><strong>Q：位宽从 3 变成 32，算法要换吗？</strong><br>A：不换。寄存器加长，反馈仍是最高位和输入的异或，抽头改抄新多项式。一拍送几个比特由并行度 (m) 单独决定。</p>
+<p><strong>Q：refin 是把整帧倒过来吗？</strong><br>A：只把每个输入字节内部的比特顺序反过来，变成低位先入。字节和字节之间的先后保持不变。</p>
+<p><strong>Q：以太网 FCS 重算为什么不是 0？</strong><br>A：它的 xorout 是 <code>0xFFFFFFFF</code>，线上那 4 字节是数学余数再异或全 1。按低字节在前把 FCS 接回帧尾，用同一套参数重算，正确帧得到 <code>0x2144DF1C</code>。</p>
+<p><strong>Q：并行电路的异或网从哪来？</strong><br>A：把单比特更新写成 (S’&#x3D;AS\oplus Bd)，连做 (m) 拍得到 (S_m&#x3D;A^m S\oplus\sum_j A^{m-1-j}Bd_j)。也可以对每个状态位、每个数据位各跑一次串行递推，把结果里的 1 收成异或树。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>读完可以按这条线把计算串起来：</p>
+<ol>
+<li>CRC 是 GF(2) 上的 (M(x),x^n \bmod G(x))。加减就是异或，所以长除法变成移位寄存器加抽头。</li>
+<li>能看见哪些错误，由 (G(x)) 的次数、常数项、(x+1) 因子和本原因子决定。漏检当且仅当错误多项式是 (G) 的倍数。</li>
+<li>补零形式先吃数据再移入 (n) 个 0；直接形式让每个数据位进入时就已经乘过 (x^n)。两套电路的余数相同。</li>
+<li>init、refin、refout、xorout 不改多项式。它们分别改第一拍前的寄存器、字节内比特顺序、读出顺序和最终异或。xorout 非零时，接收端比较 residue。</li>
+<li>并行是把同一条串行递推展开 (m) 次。(n) 决定余数宽度，(m) 决定一拍的组合逻辑；宽数据可以拆成只传递 (n) 位余数的流水块。</li>
+</ol>
+<p>正确实现要让多项式、比特顺序、初值、反转、结果异或和并行展开对齐，而不是只让移位寄存器按 (G(x)) 的样子连上抽头。具体帧格式里 FCS 覆盖哪些字节，以对应协议原文为准。</p>
+
+    
+  </article>
+
+  
+      
+    <div class="nexmoe-post-copyright">
+        <strong>Author：</strong>时间<br>
+        <strong>Link：</strong><a href="https://dataiswq.github.io/2026/10/03/Crc/" title="https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;10&#x2F;03&#x2F;Crc&#x2F;" target="_blank" rel="noopener">https:&#x2F;&#x2F;dataiswq.github.io&#x2F;2026&#x2F;10&#x2F;03&#x2F;Crc&#x2F;</a><br>
+        
+            <strong>版权声明：</strong>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a> 协议进行许可
+
+        
+    </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+   
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/CRC/" rel="tag">CRC</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/FCS/" rel="tag">FCS</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/GF-2/" rel="tag">GF(2)</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/%E5%B9%B6%E8%A1%8C%E7%94%B5%E8%B7%AF/" rel="tag">并行电路</a>
+    
+</div>
+  
+  
+    <script async src="/js/copy-codeblock.js?v=1791015912758"></script>
+  
+
+  
+</div></div><div class="nexmoe-post-right">    <div class="nexmoe-fixed">
+        <div class="nexmoe-tool">
+
+            
+
+            
+            
+            <button class="mdui-fab catalog" style="overflow:unset;">
+                <i class="nexmoefont icon-i-catalog"></i>
+                <div class="nexmoe-toc">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E7%AE%80%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">整体简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%8F%91%E7%94%9F%E5%9C%A8-GF-2-%E4%B8%8A"><span class="toc-number">2.</span> <span class="toc-text">计算发生在 GF(2) 上</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CRC-%E5%9C%A8%E5%AE%9A%E4%B9%89%E4%BB%80%E4%B9%88"><span class="toc-number">3.</span> <span class="toc-text">CRC 在定义什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%8B%E7%AE%97%EF%BC%9A-G-x-x-3-x-1-%EF%BC%8C%E6%95%B0%E6%8D%AE-1101"><span class="toc-number">3.1.</span> <span class="toc-text">手算：(G(x)&#x3D;x^3+x+1)，数据 1101</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84%E9%94%99%E8%AF%AF%E8%83%BD%E8%A2%AB%E7%9C%8B%E5%87%BA%E6%9D%A5"><span class="toc-number">4.</span> <span class="toc-text">什么样的错误能被看出来</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E6%AF%94%E7%89%B9%E9%94%99%E8%AF%AF"><span class="toc-number">4.1.</span> <span class="toc-text">单比特错误</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%95%BF%E5%BA%A6%E4%B8%8D%E8%B6%85%E8%BF%87-CRC-%E5%AE%BD%E5%BA%A6%E7%9A%84%E7%AA%81%E5%8F%91"><span class="toc-number">4.2.</span> <span class="toc-text">长度不超过 CRC 宽度的突发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A5%87%E6%95%B0%E4%B8%AA%E9%94%99%E8%AF%AF"><span class="toc-number">4.3.</span> <span class="toc-text">奇数个错误</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%98%E6%98%AF%E4%BC%9A%E6%BC%8F%E6%8E%89%E7%9A%84%E9%94%99%E8%AF%AF"><span class="toc-number">4.4.</span> <span class="toc-text">还是会漏掉的错误</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E5%A4%9A%E9%A1%B9%E5%BC%8F%E8%A6%81%E5%90%8C%E6%97%B6%E6%8B%BF%E5%88%B0%E5%93%AA%E4%BA%9B%E8%83%BD%E5%8A%9B"><span class="toc-number">4.5.</span> <span class="toc-text">生成多项式要同时拿到哪些能力</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E9%95%BF%E9%99%A4%E6%B3%95%E5%88%B0%E7%A7%BB%E4%BD%8D%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">5.</span> <span class="toc-text">从长除法到移位寄存器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A5%E9%9B%B6%E5%BD%A2%E5%BC%8F%EF%BC%9A%E5%85%88%E5%90%83%E6%95%B0%E6%8D%AE%EF%BC%8C%E5%86%8D%E7%A7%BB%E5%85%A5-n-%E4%B8%AA-0"><span class="toc-number">5.1.</span> <span class="toc-text">补零形式：先吃数据，再移入 (n) 个 0</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%BD%A2%E5%BC%8F%EF%BC%9A%E6%AF%8F%E4%B8%AA%E6%95%B0%E6%8D%AE%E4%BD%8D%E8%BF%9B%E5%85%A5%E6%97%B6%E5%B7%B2%E7%BB%8F%E4%B9%98%E8%BF%87-x-n"><span class="toc-number">5.2.</span> <span class="toc-text">直接形式：每个数据位进入时已经乘过 (x^n)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E9%A1%B9%E5%BC%8F%E7%B3%BB%E6%95%B0%E5%B0%B1%E6%98%AF%E6%8A%BD%E5%A4%B4%E4%BD%8D%E7%BD%AE"><span class="toc-number">5.3.</span> <span class="toc-text">多项式系数就是抽头位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%8D%E5%AE%BD%E5%8F%98%E6%88%90-32-%E6%97%B6%EF%BC%8C%E5%BC%8F%E5%AD%90%E5%8F%AA%E6%98%AF%E6%8D%A2%E4%BA%86-n"><span class="toc-number">5.4.</span> <span class="toc-text">位宽变成 32 时，式子只是换了 (n)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%80%BC%E3%80%81%E5%8F%8D%E8%BD%AC%E5%92%8C%E7%BB%93%E6%9E%9C%E5%BC%82%E6%88%96"><span class="toc-number">6.</span> <span class="toc-text">初始值、反转和结果异或</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%80%BC"><span class="toc-number">6.1.</span> <span class="toc-text">初始值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E5%8F%8D%E8%BD%AC-refin"><span class="toc-number">6.2.</span> <span class="toc-text">输入反转 refin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E5%8F%8D%E8%BD%AC-refout"><span class="toc-number">6.3.</span> <span class="toc-text">输出反转 refout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C%E5%BC%82%E6%88%96-xorout"><span class="toc-number">6.4.</span> <span class="toc-text">结果异或 xorout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BD%8D%E5%AE%BD%E5%92%8C-CRC-%E4%BD%8D%E5%AE%BD%E4%B8%8D%E6%98%AF%E5%90%8C%E4%B8%80%E4%B8%AA%E6%95%B0"><span class="toc-number">6.5.</span> <span class="toc-text">数据位宽和 CRC 位宽不是同一个数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%8B%8D%E9%80%81%E5%85%A5%E5%A4%9A%E4%B8%AA%E6%AF%94%E7%89%B9"><span class="toc-number">7.</span> <span class="toc-text">一拍送入多个比特</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%8A%E4%B8%80%E6%8B%8D%E5%86%99%E6%88%90%E7%9F%A9%E9%98%B5"><span class="toc-number">7.1.</span> <span class="toc-text">把一拍写成矩阵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E7%BA%BF%E6%80%A7%E5%8F%A0%E5%8A%A0%E6%8A%8A%E6%AF%8F%E4%B8%80%E8%A1%8C%E6%B5%8B%E5%87%BA%E6%9D%A5"><span class="toc-number">7.2.</span> <span class="toc-text">用线性叠加把每一行测出来</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E9%A1%B9%E5%BC%8F%E5%88%86%E5%9D%97%EF%BC%9A%E6%97%A7%E4%BD%99%E6%95%B0%E5%B9%B3%E7%A7%BB%EF%BC%8C%E6%96%B0%E6%95%B0%E6%8D%AE%E5%8F%A6%E7%AE%97%EF%BC%8C%E5%86%8D%E7%9B%B8%E5%8A%A0"><span class="toc-number">7.3.</span> <span class="toc-text">多项式分块：旧余数平移，新数据另算，再相加</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%BD%E6%95%B0%E6%8D%AE%E6%8B%86%E5%BC%80%E5%86%8D%E6%B5%81%E6%B0%B4"><span class="toc-number">7.4.</span> <span class="toc-text">宽数据拆开再流水</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%8A%E5%8F%82%E6%95%B0%E6%8E%A5%E6%88%90%E4%B8%80%E6%AC%A1%E8%AE%A1%E7%AE%97"><span class="toc-number">8.</span> <span class="toc-text">把参数接成一次计算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%97%B6%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88"><span class="toc-number">9.</span> <span class="toc-text">实现时要注意什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">10.</span> <span class="toc-text">常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">11.</span> <span class="toc-text">总结</span></a></li></ol>
+                </div>
+            </button>
+            
+
+            
+
+            <a href="#nexmoe-content" class="backtop toc-link" aria-label="Back To Top" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+        </div>
+    </div>
+</div></div><div id="nexmoe-footer"><!--!--></div><div id="nexmoe-search-space"><div class="search-container"><div class="search-header"><div class="search-input-container"><input class="search-input" type="text" placeholder="Search" onInput="sinput();"></div><a class="search-close" onclick="sclose();">×</a></div><div class="search-body"></div></div></div><div></div></body></html>
